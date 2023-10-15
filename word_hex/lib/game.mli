@@ -6,22 +6,21 @@ module type GameType = sig
   type t
   (** Representation type of the word_hex game. *)
 
-  val build : int -> t
-  (** Builds a word_hex game, given an integer parameter [n] describing the size
-      of n-grams and a list of strings [corpus]. Requires: [n > 0]. *)
+  val build : string list option -> int -> t
+  (** Given a list of custom words [words] and the number of hexes that the game
+      board should have [hexes], returns a word_hex game. *)
 
-  val generate_next : t -> string list -> string option
-  (** Given a list of strings [prompt], generate the next word. Returns [None]
-      if the model can't generate a word. Requires: the length of [prompt] must
-      be at least [n - 1], where [n] is the n-gram size. *)
+  val update : t -> string -> t
+  (** Given an original game [game] and a guessed word [word], returns the
+      updated game *)
 
-  val list_ngrams : t -> string list list
-  (** Produce the list of n-grams that are stored in the model. No n-gram should
-      be produced more than once. *)
+  val found : t -> string list
+  (** Given a game [game], returns a list of the words already found in the
+      game. *)
 
-  val size : t -> int
-  (** Get the parameter [n], for a n-gram model. *)
+  val print : t -> unit
+  (** Given a game [game], prints a visual representation of [game]. *)
 end
 
-(** A model based on a sampleable bag [Bag]. *)
-(* module Game (Board : BoardType) (Dictionary : DictionaryType): GameType *)
+(** A game based on a board [Board] and a dictionary [Dictionary]. *)
+(* module Game (Board : BoardType) (Dictionary : DictionaryType) : GameType *)
