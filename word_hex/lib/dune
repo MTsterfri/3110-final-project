@@ -1,0 +1,3 @@
+(library
+ (name word_hex)
+ (public_name Word_hex))
