@@ -4,7 +4,9 @@ module type BoardType = sig
   (** Type representing the data in the board. *)
 
   val build : string list option -> int -> t
-  (** Convert a sampleable bag to a list of items. *)
+  (** Given a list of custom words and the number of hexes that the board should
+      have, produces a board representation type t that includes some of the
+      words in that list. *)
 
   val contains : string -> t -> bool
   (** Returns if the board contains the string in a valid way. A board contains
