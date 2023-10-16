@@ -72,7 +72,7 @@ let rec pick_random (lst : ('a * 'b) list) (n : int) : 'b list =
     let key, pick = List.nth lst (Random.int len) in
     pick :: pick_random (List.remove_assoc key lst) (n - 1)
 
-(** Randomizes the order of the given list*)
+(** Randomizes the order of lst and appends result to acc*)
 let rec randomize (acc : 'a list) (lst : 'a list) : 'a list =
   let len = List.length lst in
   match lst with
@@ -112,8 +112,19 @@ module HexBoard : BoardType = struct
     hex_contains board (String.uppercase_ascii word)
 
   let shuffle (board : t) : t =
-    ignore board;
-    failwith "Unimplemented"
+    let outer =
+      randomize []
+        [ board.h0; board.h1; board.h2; board.h3; board.h4; board.h5 ]
+    in
+    {
+      center = board.center;
+      h0 = List.nth outer 0;
+      h1 = List.nth outer 1;
+      h2 = List.nth outer 2;
+      h3 = List.nth outer 3;
+      h4 = List.nth outer 4;
+      h5 = List.nth outer 5;
+    }
 
   let print (board : t) : unit =
     ignore board;
