@@ -1,5 +1,5 @@
 (** The signature of a word dictionary. *)
-module type DicitonaryType = sig
+module type DictionaryType = sig
   type t
   (** Type representing the data in the dictionary. *)
 
@@ -18,6 +18,6 @@ module type DicitonaryType = sig
       dictionary does not contain the word, it returns the original dictionary*)
 end
 
-module HashDict : DicitonaryType
+module HashDict : DictionaryType
 (** Dictionary such that words are stored in a HashMap in order to improve
     efficiency. *)
