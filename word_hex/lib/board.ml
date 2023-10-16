@@ -10,7 +10,30 @@ end
 
 (** A Word Hex Board. *)
 module Board : BoardType = struct
-  type t = unit
+  type hex_pos =
+    | Center
+    | H0
+    | H1
+    | H2
+    | H3
+    | H4
+    | H5
+
+  type hex = {
+    center : string;
+    h0 : string;
+    h1 : string;
+    h2 : string;
+    h3 : string;
+    h4 : string;
+    h5 : string;
+  }
+
+  type t = {
+    hexes : hex list;
+    num_hex : int;
+    overlaps : (hex_pos * int) list list;
+  }
 
   let build (input : string list option) (hexes : int) : t =
     ignore input;
