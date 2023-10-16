@@ -3,7 +3,7 @@ module type BoardType = sig
   type t
   (** Type representing the data in the board. *)
 
-  val build : string list option -> int -> t
+  val build : string list option -> t
   (** Given a list of custom words and the number of hexes that the board should
       have, produces a board representation type t that includes some of the
       words in that list. *)
@@ -24,5 +24,6 @@ module type BoardType = sig
   (** Print visual representation of the board in the terminal. *)
 end
 
-module Board : BoardType
-(** A Word Hex Board. *)
+module HexBoard : BoardType
+(** A Word Hex Board with only one hex (a hex is a group of 7 letters arranged
+    in a hexagon). *)

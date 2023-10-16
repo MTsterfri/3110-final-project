@@ -2,42 +2,43 @@
 module type BoardType = sig
   type t
 
-  val build : string list option -> int -> t
+  val build : string list option -> t
   val contains : string -> t -> bool
   val shuffle : t -> t
   val print : t -> unit
 end
 
+type hex = {
+  center : string;
+  h0 : string;
+  h1 : string;
+  h2 : string;
+  h3 : string;
+  h4 : string;
+  h5 : string;
+}
+(** Type representing a single hex of a board (6 letters in a hexagon pattern
+    around a 7th centeral letter)*)
+
+type hex_pos =
+  | Center
+  | H0
+  | H1
+  | H2
+  | H3
+  | H4
+  | H5
+
+(** Type representing the 7 positions on a hex. Center is the central letter,
+    while Hn for n in (0..5) inclusive goes around the hexagon clockwise with H0
+    starting at 12:00. *)
+
 (** A Word Hex Board. *)
-module Board : BoardType = struct
-  type hex_pos =
-    | Center
-    | H0
-    | H1
-    | H2
-    | H3
-    | H4
-    | H5
+module HexBoard : BoardType = struct
+  type t = hex
 
-  type hex = {
-    center : string;
-    h0 : string;
-    h1 : string;
-    h2 : string;
-    h3 : string;
-    h4 : string;
-    h5 : string;
-  }
-
-  type t = {
-    hexes : hex list;
-    num_hex : int;
-    overlaps : (hex_pos * int) list list;
-  }
-
-  let build (input : string list option) (hexes : int) : t =
+  let build (input : string list option) : t =
     ignore input;
-    ignore hexes;
     failwith "Unimplemented"
 
   let contains (word : string) (board : t) : bool =
