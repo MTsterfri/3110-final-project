@@ -9,13 +9,13 @@ module type BoardType = sig
 end
 
 type hex = {
-  center : string;
-  h0 : string;
-  h1 : string;
-  h2 : string;
-  h3 : string;
-  h4 : string;
-  h5 : string;
+  center : char;
+  h0 : char;
+  h1 : char;
+  h2 : char;
+  h3 : char;
+  h4 : char;
+  h5 : char;
 }
 (** Type representing a single hex of a board (6 letters in a hexagon pattern
     around a 7th centeral letter)*)
@@ -33,32 +33,32 @@ type hex_pos =
   | H5
 
 (** Association List for uppercase english vowels*)
-let vowel_list = [ (0, "A"); (1, "E"); (2, "I"); (3, "O"); (4, "U") ]
+let vowel_list = [ (0, 'A'); (1, 'E'); (2, 'I'); (3, 'O'); (4, 'U') ]
 
 (** Association List for uppercase english consonants*)
 let consonant_list =
   [
-    (0, "B");
-    (1, "C");
-    (2, "D");
-    (3, "F");
-    (4, "G");
-    (5, "H");
-    (6, "J");
-    (7, "K");
-    (8, "L");
-    (9, "M");
-    (10, "N");
-    (11, "P");
-    (12, "Q");
-    (13, "R");
-    (14, "S");
-    (15, "T");
-    (16, "V");
-    (17, "W");
-    (18, "X");
-    (19, "Y");
-    (20, "Z");
+    (0, 'B');
+    (1, 'C');
+    (2, 'D');
+    (3, 'F');
+    (4, 'G');
+    (5, 'H');
+    (6, 'J');
+    (7, 'K');
+    (8, 'K');
+    (9, 'M');
+    (10, 'N');
+    (11, 'P');
+    (12, 'Q');
+    (13, 'R');
+    (14, 'S');
+    (15, 'T');
+    (16, 'V');
+    (17, 'W');
+    (18, 'X');
+    (19, 'Y');
+    (20, 'Z');
   ]
 
 (** Picks n random elements from lst. Ensures no two elements in the list
@@ -81,6 +81,14 @@ let rec randomize (acc : 'a list) (lst : 'a list) : 'a list =
       let next = List.nth lst (Random.int len) in
       randomize (acc @ [ next ]) (List.filter (fun x -> x != next) lst)
 
+(** Returns if the given hex contains the word. The given hex contains the word
+    all characters of the word are found within the hex*)
+let rec hex_contains (h : hex) (word : string) : bool =
+  let hlst = [ h.center; h.h0; h.h1; h.h2; h.h3; h.h4; h.h5 ] in
+  String.fold_left
+    (fun bl chr -> bl && List.exists (fun lst_chr -> lst_chr = chr) hlst)
+    true word
+
 (** A Word Hex Board. *)
 module HexBoard : BoardType = struct
   type t = hex
@@ -101,9 +109,7 @@ module HexBoard : BoardType = struct
     }
 
   let contains (word : string) (board : t) : bool =
-    ignore word;
-    ignore board;
-    failwith "Unimplemented"
+    hex_contains board (String.uppercase_ascii word)
 
   let shuffle (board : t) : t =
     ignore board;
