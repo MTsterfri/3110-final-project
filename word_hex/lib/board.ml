@@ -33,33 +33,30 @@ type hex_pos =
   | H5
 
 (** Association List for uppercase english vowels*)
-let vowel_list = [ (0, 'A'); (1, 'E'); (2, 'I'); (3, 'O'); (4, 'U') ]
+let vowel_list = [ (0, 'A'); (4, 'E'); (8, 'I'); (14, 'O'); (20, 'U') ]
 
-(** Association List for uppercase english consonants*)
-let consonant_list =
+(** Association List for common uppercase english consonants*)
+let common_consonant_list =
   [
-    (0, 'B');
-    (1, 'C');
-    (2, 'D');
-    (3, 'F');
-    (4, 'G');
-    (5, 'H');
-    (6, 'J');
-    (7, 'K');
-    (8, 'K');
-    (9, 'M');
-    (10, 'N');
-    (11, 'P');
-    (12, 'Q');
-    (13, 'R');
-    (14, 'S');
-    (15, 'T');
-    (16, 'V');
-    (17, 'W');
-    (18, 'X');
-    (19, 'Y');
-    (20, 'Z');
+    (1, 'B');
+    (2, 'C');
+    (3, 'D');
+    (5, 'F');
+    (6, 'G');
+    (7, 'H');
+    (11, 'L');
+    (12, 'M');
+    (13, 'N');
+    (15, 'P');
+    (17, 'R');
+    (18, 'S');
+    (19, 'T');
+    (24, 'Y');
   ]
+
+(** Association List for uncommon uppercase english consonants*)
+let uncommon_consonant_list =
+  [ (9, 'J'); (10, 'K'); (16, 'Q'); (21, 'V'); (22, 'W'); (23, 'X'); (25, 'Z') ]
 
 (** Picks n random elements from lst. Ensures no two elements in the list
     returned come from the same 'index' of the list. This means, if all elements
@@ -96,8 +93,12 @@ module HexBoard : BoardType = struct
   let build (input : string list option) : t =
     ignore input;
     let vowels = pick_random vowel_list 2 in
-    let consonants = pick_random consonant_list 5 in
-    let outer = randomize [] (List.nth vowels 1 :: consonants) in
+    let common_consonants = pick_random common_consonant_list 4 in
+    let uncommon_consonants = pick_random uncommon_consonant_list 1 in
+    let outer =
+      randomize []
+        (List.nth vowels 1 :: (common_consonants @ uncommon_consonants))
+    in
     {
       center = List.nth vowels 0;
       h0 = List.nth outer 0;
@@ -109,7 +110,10 @@ module HexBoard : BoardType = struct
     }
 
   let contains (word : string) (board : t) : bool =
-    hex_contains board (String.uppercase_ascii word)
+    let word_upper = String.uppercase_ascii word in
+    String.length word >= 4
+    && String.contains word_upper board.center
+    && hex_contains board word_upper
 
   let shuffle (board : t) : t =
     let outer =
@@ -127,6 +131,22 @@ module HexBoard : BoardType = struct
     }
 
   let print (board : t) : unit =
-    ignore board;
-    failwith "Unimplemented"
+    let short = "     " in
+    let long = "         " in
+    print_string short;
+    print_char board.h0;
+    print_newline ();
+    print_char board.h5;
+    print_string long;
+    print_char board.h1;
+    print_newline ();
+    print_string short;
+    print_char board.center;
+    print_newline ();
+    print_char board.h4;
+    print_string long;
+    print_char board.h2;
+    print_newline ();
+    print_string short;
+    print_char board.h3
 end
