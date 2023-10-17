@@ -148,5 +148,6 @@ module HexBoard : BoardType = struct
     print_char board.h2;
     print_newline ();
     print_string short;
-    print_char board.h3
+    print_char board.h3;
+    print_newline ()
 end
