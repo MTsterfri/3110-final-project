@@ -72,7 +72,6 @@ module Game (Board : BoardType) : GameType = struct
       }
     else game
 
-  let update (game : t) (word : string) : t = failwith "Unimplemented"
-  let found (game : t) : string list = failwith "Unimplemented"
+  let found (game : t) : string list = game.found_words
   let print (game : t) : unit = failwith "Unimplemented"
 end
