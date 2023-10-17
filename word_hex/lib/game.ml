@@ -49,10 +49,10 @@ module Game (Board : BoardType) : GameType = struct
     let valid_dictionary_word = HashDict.contains word game.dictionary in
     new_word && valid_board_word && valid_dictionary_word
 
-  (**Returns the number of points associated with a word. The number of points
-     associated with a word is equal to the length of the word, unless the word
-     is only four letters long, for which it is then only associated with one
-     point.*)
+  (**Returns the number of points associated with a word [word]. The number of
+     points associated with [word] is equal to the length of [word], unless
+     [word] is only four letters long, for which it is then only associated with
+     one point.*)
   let score_calc (word : string) : int =
     if String.length word = 4 then 1 else String.length word
 
@@ -73,5 +73,11 @@ module Game (Board : BoardType) : GameType = struct
     else game
 
   let found (game : t) : string list = game.found_words
-  let print (game : t) : unit = failwith "Unimplemented"
+
+  let print (game : t) : unit =
+    let score = string_of_int game.score in
+    print_string ("Score: " ^ score);
+    Board.print game.board;
+    print_string game.message;
+    print_newline ()
 end
