@@ -5,18 +5,18 @@ open Dictionary
 module type GameType = sig
   type t
 
-  val build : string list option -> int -> t
+  val build : string list option -> HashDict.t -> t
   val update : t -> string -> t
   val found : t -> string list
   val print : t -> unit
 end
 
-module Game (Board : BoardType) (Dictionary : DictionaryType) : GameType =
-struct
-  (* TODO: Implement this type and module *)
+module Game (Board : BoardType) : GameType = struct
+  module Board : BoardType = Board
+
   type t = unit
 
-  let build (words : string list option) (hexes : int) : t =
+  let build (words : string list option) (dict : HashDict.t) : t =
     failwith "Unimplemented"
 
   let update (game : t) (word : string) : t = failwith "Unimplemented"

@@ -6,7 +6,7 @@ module type GameType = sig
   type t
   (** Representation type of the word_hex game. *)
 
-  val build : string list option -> int -> t
+  val build : string list option -> HashDict.t -> t
   (** Given a list of custom words [words] and the number of hexes that the game
       board should have [hexes], returns a word_hex game. *)
 
@@ -23,4 +23,4 @@ module type GameType = sig
 end
 
 (** A game based on a board [Board] and a dictionary [Dictionary]. *)
-module Game (Board : BoardType) (Dictionary : DictionaryType) : GameType
+module Game (Board : BoardType) : GameType
