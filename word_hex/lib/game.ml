@@ -62,15 +62,16 @@ module Game (Board : BoardType) : GameType = struct
     if new_word word original_found_words = false then
       { game with message = "You already found that word!" }
     else if valid_word word game then
-      let new_score = original_score + score_calc word in
+      let points = score_calc word in
+      let new_score = original_score + points in
       {
         score = new_score;
         found_words = String.uppercase_ascii word :: original_found_words;
         board = game.board;
         dictionary = game.dictionary;
-        message = word ^ " +" ^ string_of_int new_score;
+        message = word ^ " +" ^ string_of_int points;
       }
-    else game
+    else { game with message = "Not a valid word. :()" }
 
   let found (game : t) : string list = game.found_words
 
