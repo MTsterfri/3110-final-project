@@ -8,25 +8,34 @@ module type DictionaryType = sig
   val remove : string -> t -> t
 end
 
+(* module HashDict : DictionaryType = struct type t = unit
+
+   let build (lst : string list) = ignore lst; failwith "Unimplimented"
+
+   let contains (str : string) (dict : t) : bool = ignore str; ignore dict;
+   failwith "Unimplimented"
+
+   let insert (str : string) (dict : t) : t = ignore str; ignore dict; failwith
+   "Unimplimented"
+
+   let remove (str : string) (dict : t) : t = ignore str; ignore dict; failwith
+   "Unimplimented" end *)
+
 module HashDict : DictionaryType = struct
-  type t = unit
+  type t = string list
 
-  let build (lst : string list) =
-    ignore lst;
-    failwith "Unimplimented"
+  let build (lst : string list) : t = lst
 
-  let contains (str : string) (dict : t) : bool =
-    ignore str;
-    ignore dict;
-    failwith "Unimplimented"
+  let rec contains (str : string) (dict : t) : bool =
+    match dict with
+    | [] -> false
+    | h :: l -> if str = h then true else contains str (build l)
 
-  let insert (str : string) (dict : t) : t =
-    ignore str;
-    ignore dict;
-    failwith "Unimplimented"
+  let insert (str : string) (dict : t) : t = str :: dict
 
-  let remove (str : string) (dict : t) : t =
-    ignore str;
-    ignore dict;
-    failwith "Unimplimented"
+  let rec remove (str : string) (dict : t) : t =
+    match dict with
+    | [] -> dict
+    | h :: l ->
+        if str = h then remove str (build l) else h :: remove str (build l)
 end
