@@ -23,4 +23,4 @@ module type GameType = sig
 end
 
 (** A game based on a board [Board] and a dictionary [Dictionary]. *)
-(* module Game (Board : BoardType) (Dictionary : DictionaryType) : GameType *)
+module Game (Board : BoardType) (Dictionary : DictionaryType) : GameType
