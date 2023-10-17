@@ -76,8 +76,8 @@ module Game (Board : BoardType) : GameType = struct
 
   let print (game : t) : unit =
     let score = string_of_int game.score in
-    print_string ("Score: " ^ score);
+    print_endline ("Score: " ^ score ^ "\n\n");
     Board.print game.board;
-    print_string game.message;
+    print_endline game.message;
     print_newline ()
 end
