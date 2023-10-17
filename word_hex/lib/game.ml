@@ -14,10 +14,22 @@ end
 module Game (Board : BoardType) : GameType = struct
   module Board : BoardType = Board
 
-  type t = unit
+  type t = {
+    score : int;
+    found_words : string list;
+    board : Board.t;
+    dictionary : HashDict.t;
+    message : string;
+  }
 
   let build (words : string list option) (dict : HashDict.t) : t =
-    failwith "Unimplemented"
+    {
+      score = 0;
+      found_words = [];
+      board = Board.build words;
+      dictionary = dict;
+      message = "";
+    }
 
   let update (game : t) (word : string) : t = failwith "Unimplemented"
   let found (game : t) : string list = failwith "Unimplemented"
