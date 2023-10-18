@@ -17,6 +17,7 @@ let rec repl (game : G.t) : unit =
 
 (* Main Processing *)
 let () =
+  Random.self_init ();
   print_endline "\n\nWelcome to Word Hex!\n";
   print_endline
     "How to play: Type any word you can construct from what is given.\n";
