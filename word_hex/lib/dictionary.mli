@@ -16,9 +16,11 @@ val contains_opt : string -> t -> string option
     inside dictionary [t] regardless of character case. Otherwise returns [None] *)
 
 val insert_opt : string -> t -> string option
-(** [insert str t] inserts the word [str] in lowercase into a dictionary [t]. If
-    the dicitonary already contains [str] changes nothing*)
+(** [insert str t] inserts the word [str] in lowercase into a dictionary [t] and
+    returns [Some lowercase_str]. If the dicitonary already contains [str]
+    changes nothing and returns [None]*)
 
 val remove_opt : string -> t -> string option
 (** [remove str t] removes the word [str] from a dictionary [t] regardless of
-    case. If a dictionary does not contain the word, it makes no changes*)
+    case and returns the removed element as [Some lowercase_str]. If a
+    dictionary does not contain the word, it makes no changes and returns [None]*)

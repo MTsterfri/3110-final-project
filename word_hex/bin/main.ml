@@ -24,7 +24,7 @@ let () =
   print_endline "Press enter to continue";
   let _ = read_line () in
   print_endline "Please wait while the game is set up...\n";
-  let dict_lst = [] in
+  let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
   (*TODO: UPDATE DICT_LST*)
   let dict = Dictionary.of_list dict_lst in
   let game = G.build None dict in
