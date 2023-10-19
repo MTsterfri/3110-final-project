@@ -3,7 +3,10 @@ module type DictionaryType = sig
   type t
   (** Type representing the data in the dictionary. *)
 
-  val build : string list -> t
+  val to_list : t -> string list
+  (** [build lst] takes a dictionary and returns its elements as a list of words*)
+
+  val of_list : string list -> t
   (** [build lst] takes a list of string words and makes them into a dictionary*)
 
   val contains : string -> t -> bool

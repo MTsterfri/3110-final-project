@@ -7,7 +7,7 @@ open OUnit2
 
 (* Game Tests *)
 
-let game_tests = [ "Test 1" >:: fun _ -> assert_equal 1 2]
+let game_tests = []
 
 (* Board Tests *)
 

@@ -2,7 +2,8 @@
 module type DictionaryType = sig
   type t
 
-  val build : string list -> t
+  val to_list : t -> string list
+  val of_list : string list -> t
   val contains : string -> t -> bool
   val insert : string -> t -> t
   val remove : string -> t -> t
@@ -24,7 +25,8 @@ end
 module HashDict : DictionaryType = struct
   type t = string list
 
-  let build (lst : string list) : t = lst
+  let to_list (dict : t) : string list = dict
+  let of_list (lst : string list) : t = lst
 
   let rec contains (str : string) (dict : t) : bool =
     (* match dict with | [] -> false | h :: l -> if str = h then true else
@@ -37,5 +39,5 @@ module HashDict : DictionaryType = struct
     match dict with
     | [] -> dict
     | h :: l ->
-        if str = h then remove str (build l) else h :: remove str (build l)
+        if str = h then remove str (of_list l) else h :: remove str (of_list l)
 end
