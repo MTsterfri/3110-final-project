@@ -4,16 +4,31 @@ open Dictionary
 open Game
 module G = Game (HexBoard)
 
+let command (input : string) (g : G.t) (dict : Dictionary.t) : G.t =
+  match input with
+  | "#help" ->
+      print_newline ();
+      print_endline "The list of commands are \n #help - shows list of commands";
+      print_newline ();
+      g
+  | _ ->
+      print_endline "Not a Valid Command";
+      print_newline ();
+      g
+
 (* read-eval-print loop *)
-let rec repl (game : G.t) : unit =
+let rec repl (game : G.t) (dict : Dictionary.t) : unit =
   G.print game;
   print_string "Type a word: ";
   let input = read_line () in
-  match input with
-  | "" -> print_endline "bye"
-  | _ ->
-      print_newline ();
-      repl (G.update game input)
+  if String.length input > 0 && input.[0] = '#' then
+    repl (command input game dict) dict
+  else
+    match input with
+    | "" -> print_endline "bye"
+    | _ ->
+        print_newline ();
+        repl (G.update game input) dict
 
 (* Main Processing *)
 let () =
@@ -28,4 +43,4 @@ let () =
   (*TODO: UPDATE DICT_LST*)
   let dict = Dictionary.of_list dict_lst in
   let game = G.build None dict in
-  repl game
+  repl game dict
