@@ -168,5 +168,7 @@ module MultiBoard = struct
     match board with
     | HexB b -> HexB (HexBoard.shuffle b)
 
-  let print (board : t) : unit = failwith "Unimplemented"
+  let print (board : t) : unit =
+    match board with
+    | HexB b -> HexBoard.print b
 end
