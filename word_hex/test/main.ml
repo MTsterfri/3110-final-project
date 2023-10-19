@@ -36,7 +36,7 @@ let pp_list pp_elt lst =
 let of_to_test str inp out =
   str >:: fun _ ->
   assert_equal ~printer:(pp_list pp_string) out
-    HashDict.(inp |> of_list |> to_list)
+    Dictionary.(inp |> of_list |> to_list)
 
 let hwy = [ "hello"; "world"; "yay" ]
 

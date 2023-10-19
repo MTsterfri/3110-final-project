@@ -26,6 +26,6 @@ let () =
   print_endline "Please wait while the game is set up...\n";
   let dict_lst = [] in
   (*TODO: UPDATE DICT_LST*)
-  let dict = HashDict.of_list dict_lst in
+  let dict = Dictionary.of_list dict_lst in
   let game = G.build None dict in
   repl game

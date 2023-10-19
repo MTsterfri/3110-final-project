@@ -5,7 +5,7 @@ open Dictionary
 module type GameType = sig
   type t
 
-  val build : string list option -> HashDict.t -> t
+  val build : string list option -> Dictionary.t -> t
   val update : t -> string -> t
   val found : t -> string list
   val print : t -> unit
@@ -18,11 +18,11 @@ module Game (Board : BoardType) : GameType = struct
     score : int;
     found_words : string list;
     board : Board.t;
-    dictionary : HashDict.t;
+    dictionary : Dictionary.t;
     message : string;
   }
 
-  let build (words : string list option) (dict : HashDict.t) : t =
+  let build (words : string list option) (dict : Dictionary.t) : t =
     {
       score = 0;
       found_words = [];
@@ -46,7 +46,9 @@ module Game (Board : BoardType) : GameType = struct
   let valid_word (word : string) (game : t) : bool =
     let new_word = new_word word game.found_words in
     let valid_board_word = Board.contains word game.board in
-    let valid_dictionary_word = HashDict.contains word game.dictionary in
+    let valid_dictionary_word =
+      Option.is_some (Dictionary.contains_opt word game.dictionary)
+    in
     new_word && valid_board_word && valid_dictionary_word
 
   (**Returns the number of points associated with a word [word]. The number of
