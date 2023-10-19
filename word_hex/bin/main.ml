@@ -11,10 +11,22 @@ let command (input : string) (g : G.t) (dict : Dictionary.t) : G.t =
       print_endline
         "The list of commands are \n\
         \ #help - shows list of commands \n\
-        \ #new - starts a new game";
+        \ #new - starts a new game \n\
+        \ #found - lists the words you have already found";
       print_newline ();
       g
   | "#new" -> G.build None dict
+  | "#found" ->
+      print_newline ();
+      print_endline "Words Found So Far:";
+      ignore
+        (List.map
+           (fun x ->
+             print_string x;
+             print_newline ())
+           (G.found g));
+      print_newline ();
+      g
   | _ ->
       print_endline "Not a Valid Command";
       print_newline ();
