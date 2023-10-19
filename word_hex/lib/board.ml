@@ -153,11 +153,12 @@ module HexBoard : BoardType = struct
 end
 
 module MultiBoard = struct
-  type t = HexBoard
+  type t = HexBoard.t
   type shape = OneHex
 
   let build (s : shape) (input : string list option) : t =
-    failwith "Unimplemented"
+    match s with
+    | OneHex -> HexBoard.build input
 
   let contains (word : string) (board : t) : bool = failwith "Unimplemented"
   let shuffle (board : t) : t = failwith "Unimplemented"
