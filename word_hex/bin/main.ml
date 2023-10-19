@@ -8,9 +8,13 @@ let command (input : string) (g : G.t) (dict : Dictionary.t) : G.t =
   match input with
   | "#help" ->
       print_newline ();
-      print_endline "The list of commands are \n #help - shows list of commands";
+      print_endline
+        "The list of commands are \n\
+        \ #help - shows list of commands \n\
+        \ #new - starts a new game";
       print_newline ();
       g
+  | "#new" -> G.build None dict
   | _ ->
       print_endline "Not a Valid Command";
       print_newline ();
