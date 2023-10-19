@@ -164,6 +164,9 @@ module MultiBoard = struct
     match board with
     | HexB b -> HexBoard.contains word b
 
-  let shuffle (board : t) : t = failwith "Unimplemented"
+  let shuffle (board : t) : t =
+    match board with
+    | HexB b -> HexB (HexBoard.shuffle b)
+
   let print (board : t) : unit = failwith "Unimplemented"
 end
