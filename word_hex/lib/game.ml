@@ -8,6 +8,8 @@ module type GameType = sig
   val build : string list option -> Dictionary.t -> t
   val update : t -> string -> t
   val found : t -> string list
+  val shuffle : t -> t
+  val reset : t -> t
   val print : t -> unit
 end
 
@@ -77,6 +79,8 @@ module Game (Board : BoardType) : GameType = struct
     else { game with message = "Not a valid word. :)" }
 
   let found (game : t) : string list = game.found_words
+  let shuffle (game : t) : t = failwith "Unimplemented"
+  let reset (game : t) : t = { game with found_words = []; score = 0 }
 
   let print (game : t) : unit =
     let score = string_of_int game.score in

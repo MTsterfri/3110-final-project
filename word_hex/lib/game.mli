@@ -18,11 +18,17 @@ module type GameType = sig
   (** Given a game [game], returns a list of the words already found in the
       game. *)
 
+  val shuffle : t -> t
+  (**Given a game [game], returns the same [game] except with the board
+     shuffled.*)
+
+  val reset : t -> t
+  (**Given a game [game], resets [game]. Resetting [game] means keeping its
+     board and dictionary, but erasing all previously found words and resetting
+     the score to 0.*)
+
   val print : t -> unit
   (** Given a game [game], prints a visual representation of [game]. *)
-
-  val shuffle : t -> t
-  val reset : t -> t
 end
 
 (** A game based on a board [Board] and a dictionary [Dictionary]. *)
