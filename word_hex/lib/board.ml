@@ -151,3 +151,24 @@ module HexBoard : BoardType = struct
     print_char board.h3;
     print_newline ()
 end
+
+module MultiBoard = struct
+  type t = HexB of HexBoard.t
+  type shape = OneHex
+
+  let build (s : shape) (input : string list option) : t =
+    match s with
+    | OneHex -> HexB (HexBoard.build input)
+
+  let contains (word : string) (board : t) : bool =
+    match board with
+    | HexB b -> HexBoard.contains word b
+
+  let shuffle (board : t) : t =
+    match board with
+    | HexB b -> HexB (HexBoard.shuffle b)
+
+  let print (board : t) : unit =
+    match board with
+    | HexB b -> HexBoard.print b
+end

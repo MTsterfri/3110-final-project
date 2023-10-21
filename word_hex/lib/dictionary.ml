@@ -1,41 +1,30 @@
-(** The signature of a word dictionary. *)
-module type DictionaryType = sig
-  type t
+type t = (int, string) Hashtbl.t
 
-  val build : string list -> t
-  val contains : string -> t -> bool
-  val insert : string -> t -> t
-  val remove : string -> t -> t
-end
+let contains_opt (str : string) (dict : t) : string option =
+  Hashtbl.find_opt dict (Hashtbl.hash str)
 
-(* module HashDict : DictionaryType = struct type t = unit
+let insert_opt (str : string) (dict : t) : string option =
+  match contains_opt str dict with
+  | None ->
+      let strl = String.lowercase_ascii str in
+      Hashtbl.add dict (Hashtbl.hash strl) strl;
+      Some strl
+  | Some _ -> None
 
-   let build (lst : string list) = ignore lst; failwith "Unimplimented"
+let to_list (dict : t) : string list =
+  dict |> Hashtbl.to_seq |> List.of_seq |> List.split |> snd
+  |> List.sort String.compare
 
-   let contains (str : string) (dict : t) : bool = ignore str; ignore dict;
-   failwith "Unimplimented"
+let of_list (lst : string list) : t =
+  let tbl = Hashtbl.create (List.length lst) in
+  let rec add (l : string list) =
+    match l with
+    | [] -> tbl
+    | h :: t ->
+        let _ = insert_opt h tbl in
+        add t
+  in
+  add lst
 
-   let insert (str : string) (dict : t) : t = ignore str; ignore dict; failwith
-   "Unimplimented"
-
-   let remove (str : string) (dict : t) : t = ignore str; ignore dict; failwith
-   "Unimplimented" end *)
-
-module HashDict : DictionaryType = struct
-  type t = string list
-
-  let build (lst : string list) : t = lst
-
-  let rec contains (str : string) (dict : t) : bool =
-    (* match dict with | [] -> false | h :: l -> if str = h then true else
-       contains str (build l) *)
-    true
-
-  let insert (str : string) (dict : t) : t = str :: dict
-
-  let rec remove (str : string) (dict : t) : t =
-    match dict with
-    | [] -> dict
-    | h :: l ->
-        if str = h then remove str (build l) else h :: remove str (build l)
-end
+let remove_opt (str : string) (dict : t) : string option =
+  failwith "Unimplimented"
