@@ -58,6 +58,7 @@ module Game (Board : BoardType) : GameType = struct
 
   let update (game : t) (word : string) : t =
     let original_score = game.score in
+
     let original_found_words = game.found_words in
     if new_word word original_found_words = false then
       { game with message = "You already found that word!" }
