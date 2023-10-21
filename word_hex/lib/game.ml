@@ -79,7 +79,11 @@ module Game (Board : BoardType) : GameType = struct
     else { game with message = "Not a valid word. :)" }
 
   let found (game : t) : string list = game.found_words
-  let shuffle (game : t) : t = failwith "Unimplemented"
+
+  let shuffle (game : t) : t =
+    let shuffled_board = Board.shuffle game.board in
+    { game with board = shuffled_board }
+
   let reset (game : t) : t = { game with found_words = []; score = 0 }
 
   let print (game : t) : unit =
