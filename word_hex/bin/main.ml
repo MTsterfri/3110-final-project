@@ -12,7 +12,9 @@ let command (input : string) (g : G.t) (dict : Dictionary.t) : G.t =
         "The list of commands are \n\
         \ #help - shows list of commands \n\
         \ #new - starts a new game \n\
-        \ #found - lists the words you have already found";
+        \ #found - lists the words you have already found\n\
+        \         #shuffle - shuffles the letters on the game board\n\
+        \         #reset - resets the current game";
       print_newline ();
       g
   | "#new" -> G.build None dict
@@ -27,6 +29,8 @@ let command (input : string) (g : G.t) (dict : Dictionary.t) : G.t =
            (G.found g));
       print_newline ();
       g
+  | "#shuffle" -> G.shuffle g
+  | "#reset" -> G.reset g
   | _ ->
       print_endline "Not a Valid Command";
       print_newline ();
