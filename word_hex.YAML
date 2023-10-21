@@ -1,0 +1,32 @@
+---
+# Members of your group.
+group:
+  - name: Sterling Chargois
+    netid: smc453
+  - name: Maya Deen
+    netid: mad362
+  - name: April Collamore
+    netid: ahc248
+# Your PM.
+pm:
+  name: Koji Kimura
+  netid: kjk227
+# Set to false if you don't want your gallery entry to be public.
+publish: true
+# Pithy title
+title: "Word Hex"
+# OK if this is a Cornell Github link, but public gallery viewers won't be able to see it.
+git-repo: "https://github.coecis.cornell.edu/smc453/3110-final-project"
+# If you have no demo screencast, replace the url string with an empty string ""
+demo-video-url: ""
+# Write a short, attention-grabbing description of your project.
+desc: >
+  Our project is inspired by The New York Times Spelling Bee. It gives the player
+  a game board of seven letters (displayed as a hexagon with six letters on each 
+  corner and one in the center). The player should attempt to produce as many
+  words as possible using the provided letters, but always using the center
+  letter. Letters may be repeated.
+
+  The game is run out of terminal, where players can type words or game commands
+  starting with '#'. Points are based on the length of each word. The goal is to 
+  reach the highest score possible.
