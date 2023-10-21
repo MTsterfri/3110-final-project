@@ -20,6 +20,9 @@ module type GameType = sig
 
   val print : t -> unit
   (** Given a game [game], prints a visual representation of [game]. *)
+
+  val shuffle : t -> t
+  val reset : t -> t
 end
 
 (** A game based on a board [Board] and a dictionary [Dictionary]. *)

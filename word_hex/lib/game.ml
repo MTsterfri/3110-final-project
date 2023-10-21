@@ -71,7 +71,7 @@ module Game (Board : BoardType) : GameType = struct
         dictionary = game.dictionary;
         message = word ^ " +" ^ string_of_int points;
       }
-    else { game with message = "Not a valid word. :()" }
+    else { game with message = "Not a valid word. :)" }
 
   let found (game : t) : string list = game.found_words
 
