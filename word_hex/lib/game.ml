@@ -76,7 +76,7 @@ module Game (Board : BoardType) : GameType = struct
         dictionary = game.dictionary;
         message = word ^ " +" ^ string_of_int points;
       }
-    else { game with message = "Not a valid word. :)" }
+    else { game with message = "Not a valid word. :(" }
 
   let found (game : t) : string list = game.found_words
 
@@ -84,7 +84,8 @@ module Game (Board : BoardType) : GameType = struct
     let shuffled_board = Board.shuffle game.board in
     { game with board = shuffled_board }
 
-  let reset (game : t) : t = { game with found_words = []; score = 0 }
+  let reset (game : t) : t =
+    { game with found_words = []; score = 0; message = "" }
 
   let print (game : t) : unit =
     let score = string_of_int game.score in

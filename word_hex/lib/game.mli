@@ -24,8 +24,8 @@ module type GameType = sig
 
   val reset : t -> t
   (**Given a game [game], resets [game]. Resetting [game] means keeping its
-     board and dictionary, but erasing all previously found words and resetting
-     the score to 0.*)
+     board and dictionary, but erasing all previously found words, deleting the
+     previous message (if there was one), and resetting the score to 0.*)
 
   val print : t -> unit
   (** Given a game [game], prints a visual representation of [game]. *)
