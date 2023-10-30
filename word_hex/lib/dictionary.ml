@@ -1,7 +1,7 @@
 type t = (int, string) Hashtbl.t
 
 let contains_opt (str : string) (dict : t) : string option =
-  Hashtbl.find_opt dict (Hashtbl.hash str)
+  Hashtbl.find_opt dict (Hashtbl.hash (String.lowercase_ascii str))
 
 let insert_opt (str : string) (dict : t) : string option =
   match contains_opt str dict with

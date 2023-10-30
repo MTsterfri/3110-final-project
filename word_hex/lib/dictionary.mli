@@ -12,8 +12,8 @@ val of_list : string list -> t
     lowercase words*)
 
 val contains_opt : string -> t -> string option
-(** [contains str t] returns [Some lowercase_str] [str] if it is contained
-    inside dictionary [t] regardless of character case. Otherwise returns [None] *)
+(** [contains str t] returns [Some lowercase_str] if [str] is contained inside
+    dictionary [t] regardless of character case. Otherwise returns [None] *)
 
 val insert_opt : string -> t -> string option
 (** [insert str t] inserts the word [str] in lowercase into a dictionary [t] and
