@@ -1,30 +1,62 @@
-type t = (int, string) Hashtbl.t
+module CharMap = Map.Make (Char)
+
+type t = Node of string option * t CharMap.t
+
+let empty = Node (None, CharMap.empty)
+
+(* helper function to convert a string into a list of its characters in order
+   and in lowercase. Ex: explode "apples" -> ["a"; "p"; "p"; "l"; "e"; "s"]*)
+let expand str =
+  String.fold_right (fun c acc -> Char.lowercase_ascii c :: acc) str []
+
+let insert str d : t =
+  match String.lowercase_ascii str with
+  | "" -> d
+  | s ->
+      let rec ins ls (Node (v, m)) =
+        match ls with
+        | [] -> Node (Some s, m)
+        | h :: t -> (
+            match CharMap.find_opt h m with
+            | None -> Node (v, CharMap.add h (ins t empty) m)
+            | Some n -> Node (v, CharMap.update h (fun _ -> Some (ins t n)) m))
+      in
+      ins (expand s) d
+
+let rec to_list (d : t) =
+  match d with
+  | Node (None, m) -> CharMap.fold (fun _ d2 acc -> acc @ to_list d2) m []
+  | Node (Some str, m) ->
+      str :: CharMap.fold (fun _ d2 acc -> acc @ to_list d2) m []
+
+let of_list lst = List.fold_left (fun acc x -> insert x acc) empty lst
 
 let contains str d : bool =
-  try
-    let _ = Hashtbl.find d (Hashtbl.hash (String.lowercase_ascii str)) in
-    true
-  with Not_found -> false
+  match String.lowercase_ascii str with
+  | "" -> true
+  | s ->
+      let rec con ls (Node (v, m)) =
+        match ls with
+        | [] -> v = Some s
+        | h :: t -> (
+            match CharMap.find_opt h m with
+            | None -> false
+            | Some n -> con t n)
+      in
+      con (expand s) d
 
-let find str d = Hashtbl.find_opt d (Hashtbl.hash (String.lowercase_ascii str))
+let find str d : string option =
+  match String.lowercase_ascii str with
+  | "" -> Some ""
+  | s ->
+      let rec con ls (Node (v, m)) =
+        match ls with
+        | [] -> if v = Some s then Some s else None
+        | h :: t -> (
+            match CharMap.find_opt h m with
+            | None -> None
+            | Some n -> con t n)
+      in
+      con (expand s) d
 
-let insert str d =
-  let strl = String.lowercase_ascii str in
-  Hashtbl.add d (Hashtbl.hash strl) strl
-
-let to_list d =
-  d |> Hashtbl.to_seq |> List.of_seq |> List.split |> snd
-  |> List.sort String.compare
-
-let of_list lst =
-  let tbl = Hashtbl.create (List.length lst) in
-  let rec add (l : string list) =
-    match l with
-    | [] -> tbl
-    | h :: t ->
-        let _ = insert h tbl in
-        add t
-  in
-  add lst
-
-let remove str d = failwith "Unimplimented"
+let remove str d = failwith "Unimplemented"
