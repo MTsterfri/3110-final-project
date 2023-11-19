@@ -6,6 +6,8 @@ module type BoardType = sig
   val contains : string -> t -> bool
   val shuffle : t -> t
   val print : t -> unit
+  val get_letters : t -> char list
+  val board_of_letters : char list -> t
 end
 
 (*******************************************************)
@@ -217,7 +219,60 @@ module HexBoard : BoardType = struct
     print_string short;
     print_char board.h3;
     print_newline ()
+
+  let get_letters b = [ b.center; b.h0; b.h1; b.h2; b.h3; b.h4; b.h5 ]
+
+  let board_of_letters lst =
+    assert (List.length lst = 7);
+    {
+      center = List.nth lst 0;
+      h0 = List.nth lst 1;
+      h1 = List.nth lst 2;
+      h2 = List.nth lst 3;
+      h3 = List.nth lst 4;
+      h4 = List.nth lst 5;
+      h5 = List.nth lst 6;
+    }
 end
 
 (*******************************************************)
-(***************** HEX BOARD MODULE ********************)
+(***************** TWO HEX MODULE ********************)
+
+module TwoHex : BoardType = struct
+  type t = hex * hex
+
+  let build = failwith "Unimplemented"
+  let contains = failwith "Unimplemented"
+  let shuffle = failwith "Unimplemented"
+  let print = failwith "Unimplemented"
+  let get_letters = failwith "Unimplemented"
+  let board_of_letters = failwith "Unimplemented"
+end
+
+(**********************************************************)
+(***************** TRIPLE BOARD MODULE ********************)
+
+module TripleBoard : BoardType = struct
+  type t = hex
+
+  let build = failwith "Unimplemented"
+  let contains = failwith "Unimplemented"
+  let shuffle = failwith "Unimplemented"
+  let print = failwith "Unimplemented"
+  let get_letters = failwith "Unimplemented"
+  let board_of_letters = failwith "Unimplemented"
+end
+
+(*******************************************************)
+(***************** FLOWER BOARD MODULE ********************)
+
+module FlowerBoard : BoardType = struct
+  type t = hex
+
+  let build = failwith "Unimplemented"
+  let contains = failwith "Unimplemented"
+  let shuffle = failwith "Unimplemented"
+  let print = failwith "Unimplemented"
+  let get_letters = failwith "Unimplemented"
+  let board_of_letters = failwith "Unimplemented"
+end
