@@ -8,6 +8,9 @@ module type BoardType = sig
   val print : t -> unit
 end
 
+(*******************************************************)
+(***************** HELPER FUNCTIONS ********************)
+
 type hex = {
   center : char;
   h0 : char;
@@ -135,12 +138,14 @@ let rec hex_contains (h : hex) (word : string) : bool =
     (fun bl chr -> bl && List.exists (fun lst_chr -> lst_chr = chr) hlst)
     true word
 
+(*******************************************************)
+(***************** HEX BOARD MODULE ********************)
+
 (** A Word Hex Board. *)
 module HexBoard : BoardType = struct
   type t = hex
 
-  let build (input : string list option) : t =
-    ignore input;
+  let build_random () : t =
     let combo =
       match pick_random combinations 1 with
       | [] -> assert false
@@ -163,6 +168,13 @@ module HexBoard : BoardType = struct
       h4 = List.nth random_list 5;
       h5 = List.nth random_list 6;
     }
+
+  let build_custom (input : string list) : t = failwith "Unimplemented"
+
+  let build (input : string list option) : t =
+    match input with
+    | None -> build_random ()
+    | Some input_lst -> build_random ()
 
   let contains (word : string) (board : t) : bool =
     let word_upper = String.uppercase_ascii word in
@@ -207,23 +219,5 @@ module HexBoard : BoardType = struct
     print_newline ()
 end
 
-module MultiBoard = struct
-  type t = HexB of HexBoard.t
-  type shape = OneHex
-
-  let build (s : shape) (input : string list option) : t =
-    match s with
-    | OneHex -> HexB (HexBoard.build input)
-
-  let contains (word : string) (board : t) : bool =
-    match board with
-    | HexB b -> HexBoard.contains word b
-
-  let shuffle (board : t) : t =
-    match board with
-    | HexB b -> HexB (HexBoard.shuffle b)
-
-  let print (board : t) : unit =
-    match board with
-    | HexB b -> HexBoard.print b
-end
+(*******************************************************)
+(***************** HEX BOARD MODULE ********************)

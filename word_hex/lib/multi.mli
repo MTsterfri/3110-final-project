@@ -1,9 +1,23 @@
-(** The signature of word_hex boards. *)
-module type BoardType = sig
+(** The signature of the module that manages word_hex boards. *)
+module type MultiType = sig
   type t
   (** Type representing the data in the board. *)
 
-  val build : string list option -> t
+  type shape
+  (** Type representing the shape of the board. *)
+
+  val shape_of_string : string -> shape option
+  (** Returns Some shape corresponding to the given string. If the string does
+      not correspond to any shape, returns None. Valid strings are "OneHex"*)
+
+  val string_of_shape : shape -> string
+  (** Returns the string corresponding to the given shape. Possible strings are
+      "OneHex"*)
+
+  val shape_of_board : t -> shape
+  (** Returns the shape of the given board.*)
+
+  val build : shape -> string list option -> t
   (** Given a list of custom words and the number of hexes that the board should
       have, produces a board representation type t that includes some of the
       words in that list. Requires that the list of words contains only strings
@@ -25,6 +39,6 @@ module type BoardType = sig
   (** Print visual representation of the board in the terminal. *)
 end
 
-module HexBoard : BoardType
+module MultiBoard : MultiType
 (** A Word Hex Board with only one hex (a hex is a group of 7 letters arranged
     in a hexagon). *)
