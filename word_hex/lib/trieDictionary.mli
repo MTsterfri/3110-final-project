@@ -28,5 +28,4 @@ val find : string -> t -> string option
 
 val remove : string -> t -> t
 (** [remove str d] removes the word [str] from a dictionary [d] regardless of
-    case. If a dictionary does not contain the word, it makes no changes and
-    returns [None]*)
+    case. If a dictionary does not contain the word, it makes no changes*)

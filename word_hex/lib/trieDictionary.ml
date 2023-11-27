@@ -49,14 +49,26 @@ let find str d : string option =
   match String.lowercase_ascii str with
   | "" -> Some ""
   | s ->
-      let rec con ls (Node (v, m)) =
+      let rec f ls (Node (v, m)) =
         match ls with
         | [] -> if v = Some s then Some s else None
         | h :: t -> (
             match CharMap.find_opt h m with
             | None -> None
-            | Some n -> con t n)
+            | Some n -> f t n)
       in
-      con (expand s) d
+      f (expand s) d
 
-let remove str d = failwith "Unimplemented"
+let remove str d : t =
+  match String.lowercase_ascii str with
+  | "" -> d
+  | s ->
+      let rec rem ls (Node (v, m)) =
+        match ls with
+        | [] -> Node (None, m)
+        | h :: t -> (
+            match CharMap.find_opt h m with
+            | None -> d
+            | Some n -> Node (v, CharMap.update h (fun _ -> Some (rem t n)) m))
+      in
+      rem (expand s) d
