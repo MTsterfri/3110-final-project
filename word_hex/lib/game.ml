@@ -1,11 +1,11 @@
 open Board
-open Dictionary
+open HashDictionary
 
 (** The signature of a word_hex game. *)
 module type GameType = sig
   type t
 
-  val build : string list option -> Dictionary.t -> t
+  val build : string list option -> HashDictionary.t -> t
   val update : t -> string -> t
   val found : t -> string list
   val shuffle : t -> t
@@ -20,11 +20,11 @@ module Game (Board : BoardType) : GameType = struct
     score : int;
     found_words : string list;
     board : Board.t;
-    dictionary : Dictionary.t;
+    dictionary : HashDictionary.t;
     message : string;
   }
 
-  let build (words : string list option) (dict : Dictionary.t) : t =
+  let build (words : string list option) (dict : HashDictionary.t) : t =
     {
       score = 0;
       found_words = [];
@@ -49,7 +49,7 @@ module Game (Board : BoardType) : GameType = struct
     let new_word = new_word word game.found_words in
     let valid_board_word = Board.contains word game.board in
     let valid_dictionary_word =
-      Option.is_some (Dictionary.contains_opt word game.dictionary)
+      Option.is_some (HashDictionary.contains_opt word game.dictionary)
     in
     new_word && valid_board_word && valid_dictionary_word
 

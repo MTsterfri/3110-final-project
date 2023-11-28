@@ -1,12 +1,12 @@
 open Board
-open Dictionary
+open HashDictionary
 
 (** The signature of a word_hex game. *)
 module type GameType = sig
   type t
   (** Representation type of the word_hex game. *)
 
-  val build : string list option -> Dictionary.t -> t
+  val build : string list option -> HashDictionary.t -> t
   (** Given a list of custom words [words] and the number of hexes that the game
       board should have [hexes], returns a word_hex game. *)
 
