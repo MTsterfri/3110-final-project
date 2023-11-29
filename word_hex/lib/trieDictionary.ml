@@ -77,4 +77,10 @@ module Make = struct
               )
         in
         rem (expand s) d
+
+  let of_char_list lst dict : string list =
+    match dict with
+    | Node (v, m) ->
+        Node (v, CharMap.filter (fun k _ -> List.mem k lst) m) |> to_list
+  (* TODO *)
 end

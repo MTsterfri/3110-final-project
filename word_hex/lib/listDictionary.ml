@@ -33,4 +33,6 @@ module Make = struct
     | [] -> dict
     | h :: l ->
         if ls = h then remove ls (of_list l) else h :: remove ls (of_list l)
+
+  let of_char_list lst dict : string list = failwith "Unimplemented"
 end

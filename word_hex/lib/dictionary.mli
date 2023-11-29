@@ -33,4 +33,8 @@ module type Dictionary = sig
   val remove : string -> t -> t
   (** [remove str d] removes the word [str] from a dictionary [d] regardless of
       case. If a dictionary does not contain the word, it makes no changes*)
+
+  val of_char_list : char list -> t -> string list
+  (** [list_of_chars lst dict] filters a dictionary into a list of words that
+      only contain the characters in [lst] *)
 end
