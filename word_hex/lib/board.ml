@@ -236,43 +236,31 @@ module HexBoard : BoardType = struct
 end
 
 (*******************************************************)
-(***************** TWO HEX MODULE ********************)
+(***************** TWO HEX MODULE **********************)
 
-module TwoHex : BoardType = struct
-  type t = hex * hex
+(* module TwoHex : BoardType = struct type t = hex * hex
 
-  let build = failwith "Unimplemented"
-  let contains = failwith "Unimplemented"
-  let shuffle = failwith "Unimplemented"
-  let print = failwith "Unimplemented"
-  let get_letters = failwith "Unimplemented"
-  let board_of_letters = failwith "Unimplemented"
-end
+   let build = failwith "Unimplemented" let contains = failwith "Unimplemented"
+   let shuffle = failwith "Unimplemented" let print = failwith "Unimplemented"
+   let get_letters = failwith "Unimplemented" let board_of_letters = failwith
+   "Unimplemented" end *)
 
 (**********************************************************)
 (***************** TRIPLE BOARD MODULE ********************)
 
-module TripleBoard : BoardType = struct
-  type t = hex
+(* module TripleBoard : BoardType = struct type t = hex
 
-  let build = failwith "Unimplemented"
-  let contains = failwith "Unimplemented"
-  let shuffle = failwith "Unimplemented"
-  let print = failwith "Unimplemented"
-  let get_letters = failwith "Unimplemented"
-  let board_of_letters = failwith "Unimplemented"
-end
+   let build = failwith "Unimplemented" let contains = failwith "Unimplemented"
+   let shuffle = failwith "Unimplemented" let print = failwith "Unimplemented"
+   let get_letters = failwith "Unimplemented" let board_of_letters = failwith
+   "Unimplemented" end *)
 
 (*******************************************************)
 (***************** FLOWER BOARD MODULE ********************)
 
-module FlowerBoard : BoardType = struct
-  type t = hex
+(* module FlowerBoard : BoardType = struct type t = hex
 
-  let build = failwith "Unimplemented"
-  let contains = failwith "Unimplemented"
-  let shuffle = failwith "Unimplemented"
-  let print = failwith "Unimplemented"
-  let get_letters = failwith "Unimplemented"
-  let board_of_letters = failwith "Unimplemented"
-end
+   let build = failwith "Unimplemented" let contains = failwith "Unimplemented"
+   let shuffle = failwith "Unimplemented" let print = failwith "Unimplemented"
+   let get_letters = failwith "Unimplemented" let board_of_letters = failwith
+   "Unimplemented" end *)
