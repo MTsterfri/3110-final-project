@@ -4,10 +4,12 @@ module type BoardType = sig
 
   val build : string list option -> t
   val contains : string -> t -> bool
+  val is_pangram : string -> t -> bool
   val shuffle : t -> t
   val print : t -> unit
   val get_letters : t -> char list
   val board_of_letters : char list -> t
+  val board_data : t -> (char * char list) list
 end
 
 (*******************************************************)
@@ -140,6 +142,12 @@ let rec hex_contains (h : hex) (word : string) : bool =
     (fun bl chr -> bl && List.exists (fun lst_chr -> lst_chr = chr) hlst)
     true word
 
+let hex_is_pangram (h : hex) (word : string) : bool =
+  String.contains word h.center
+  && String.contains word h.h0 && String.contains word h.h1
+  && String.contains word h.h2 && String.contains word h.h3
+  && String.contains word h.h4 && String.contains word h.h5
+
 (*******************************************************)
 (***************** HEX BOARD MODULE ********************)
 
@@ -183,6 +191,8 @@ module HexBoard : BoardType = struct
     String.length word >= 4
     && String.contains word_upper board.center
     && hex_contains board word_upper
+
+  let is_pangram (word : string) (board : t) : bool = hex_contains board word
 
   let shuffle (board : t) : t =
     let outer =
@@ -233,6 +243,9 @@ module HexBoard : BoardType = struct
       h4 = List.nth lst 5;
       h5 = List.nth lst 6;
     }
+
+  let board_data (b : t) : (char * char list) list =
+    [ (b.center, [ b.h0; b.h1; b.h2; b.h3; b.h4; b.h5 ]) ]
 end
 
 (*******************************************************)

@@ -9,8 +9,12 @@ module type MultiType = sig
   val shape_of_board : t -> shape
   val build : shape -> string list option -> t
   val contains : string -> t -> bool
+  val is_pangram : string -> t -> bool
   val shuffle : t -> t
   val print : t -> unit
+  val get_letters : t -> char list
+  val board_of_letters : shape -> char list -> t
+  val board_data : t -> (char * char list) list
 end
 
 module MultiBoard : MultiType = struct
@@ -38,6 +42,10 @@ module MultiBoard : MultiType = struct
     match board with
     | HexB b -> HexBoard.contains word b
 
+  let is_pangram (word : string) (board : t) : bool =
+    match board with
+    | HexB b -> HexBoard.is_pangram word b
+
   let shuffle (board : t) : t =
     match board with
     | HexB b -> HexB (HexBoard.shuffle b)
@@ -45,4 +53,16 @@ module MultiBoard : MultiType = struct
   let print (board : t) : unit =
     match board with
     | HexB b -> HexBoard.print b
+
+  let get_letters (board : t) : char list =
+    match board with
+    | HexB b -> HexBoard.get_letters b
+
+  let board_of_letters (s : shape) (lst : char list) : t =
+    match s with
+    | OneHex -> HexB (HexBoard.board_of_letters lst)
+
+  let board_data (board : t) : (char * char list) list =
+    match board with
+    | HexB b -> HexBoard.board_data b
 end

@@ -16,6 +16,10 @@ module type BoardType = sig
       is included in the word. Additionally, the word is only valid if it is at
       least four characters long. *)
 
+  val is_pangram : string -> t -> bool
+  (** Returns if the given word contains all the letters of one hex on the
+      multiboard*)
+
   val shuffle : t -> t
   (** Returns a board that has the same configuration but with the letters of
       each hexagon shuffle. If there are multiple hexes in the board, returns
@@ -30,6 +34,11 @@ module type BoardType = sig
 
   val board_of_letters : char list -> t
   (** Makes a board from the the output of get_letters*)
+
+  val board_data : t -> (char * char list) list
+  (** Returns a list of tuples, where each tuple represents one hex in a
+      multiboard. The first element of each tuple is the center character, the
+      second element is a list of the other six characters of the hex. *)
 end
 
 module HexBoard : BoardType
