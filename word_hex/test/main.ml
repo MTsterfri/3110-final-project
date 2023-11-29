@@ -73,6 +73,12 @@ module DictTest (D : Dictionary.Dictionary) = struct
     "remove " ^ str >:: fun _ ->
     assert_equal o D.(of_list i |> remove c |> to_list)
 
+  (** helper function that takes in a test name [str], char list [cl], string
+      list input [i] and expected output from of_char_list [o]*)
+  let char_test str cl i o =
+    "char_test " ^ str >:: fun _ ->
+    assert_equal ~printer:(pp_list pp_string) o D.(of_list i |> of_char_list cl)
+
   let hwy = [ "hello"; "world"; "yay" ]
   let hhw = [ "helio"; "hello"; "world" ]
 
@@ -124,6 +130,23 @@ module DictTest (D : Dictionary.Dictionary) = struct
         [ "hang"; "hangout"; "hangouts" ]
         [ "hang"; "hangouts" ];
       remove_test "uppercase" "HeLlO" [ "hello" ] [];
+      (*of_char_list*)
+      char_test "empty" [ 'a' ] [] [];
+      char_test "one element include" [ 'h' ] [ "h" ] [ "h" ];
+      char_test "one element not included" [ 'x' ] [ "h" ] [];
+      char_test "empty char list" [] [ "h" ] [];
+      char_test "filter top" [ 'h'; 'e' ] [ "h"; "g"; "e" ] [ "e"; "h" ];
+      char_test "full word" [ 'h'; 'e'; 'l'; 'o' ] [ "hello" ] [ "hello" ];
+      char_test "one path"
+        [ 'h'; 'e'; 'l'; 'i'; 'o' ]
+        [ "hello"; "helio"; "hellos"; "hell"; "howdy" ]
+        [ "helio"; "hell"; "hello" ];
+      char_test "multiple paths"
+        [ 'h'; 'e'; 'l'; 'i'; 'o'; 'w'; 'r'; 'd' ]
+        [
+          "hello"; "helio"; "hellos"; "hell"; "howdy"; "world"; "word"; "waddle";
+        ]
+        [ "helio"; "hell"; "hello"; "word"; "world" ];
     ]
 end
 

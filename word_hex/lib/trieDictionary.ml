@@ -7,11 +7,6 @@ module Make = struct
 
   let empty = Node (None, CharMap.empty)
 
-  (* helper function to convert a string into a list of its characters in order
-     and in lowercase. Ex: explode "apples" -> ["a"; "p"; "p"; "l"; "e"; "s"]*)
-  let expand str =
-    String.fold_right (fun c acc -> Char.lowercase_ascii c :: acc) str []
-
   let insert str d : t =
     match String.lowercase_ascii str with
     | "" -> d
@@ -25,7 +20,7 @@ module Make = struct
               | Some n -> Node (v, CharMap.update h (fun _ -> Some (ins t n)) m)
               )
         in
-        ins (expand s) d
+        ins (Util.expand s) d
 
   let rec to_list (d : t) =
     match d with
@@ -47,7 +42,7 @@ module Make = struct
               | None -> false
               | Some n -> con t n)
         in
-        con (expand s) d
+        con (Util.expand s) d
 
   let find str d : string option =
     match String.lowercase_ascii str with
@@ -61,7 +56,7 @@ module Make = struct
               | None -> None
               | Some n -> f t n)
         in
-        f (expand s) d
+        f (Util.expand s) d
 
   let remove str d : t =
     match String.lowercase_ascii str with
@@ -76,11 +71,20 @@ module Make = struct
               | Some n -> Node (v, CharMap.update h (fun _ -> Some (rem t n)) m)
               )
         in
-        rem (expand s) d
+        rem (Util.expand s) d
 
   let of_char_list lst dict : string list =
-    match dict with
-    | Node (v, m) ->
-        Node (v, CharMap.filter (fun k _ -> List.mem k lst) m) |> to_list
+    (* let n = match dict with | Node (v, m) -> Node (v, CharMap.filter (fun k _
+       -> List.mem k lst) m) in match n with | Node (v, m) -> assert false *)
+    let rec alt d =
+      match d with
+      | Node (n, m) ->
+          Node
+            ( n,
+              CharMap.filter_map
+                (fun k v -> if List.mem k lst then Some (alt v) else None)
+                m )
+    in
+    dict |> alt |> to_list
   (* TODO *)
 end

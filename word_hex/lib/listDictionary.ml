@@ -34,5 +34,18 @@ module Make = struct
     | h :: l ->
         if ls = h then remove ls (of_list l) else h :: remove ls (of_list l)
 
-  let of_char_list lst dict : string list = failwith "Unimplemented"
+  let of_char_list lst dict : string list =
+    let out =
+      List.filter
+        (fun x ->
+          let ex = Util.expand x in
+          let rec f l =
+            match l with
+            | [] -> true
+            | h :: t -> if List.mem h lst then f t else false
+          in
+          f ex)
+        dict
+    in
+    to_list out
 end
