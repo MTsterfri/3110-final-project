@@ -1,10 +1,11 @@
 open Word_hex
 open Board
+open Multi
 open Game
-module G = Game (HexBoard)
+module G = Game
 module D = TrieDictionary.Make
 
-let command (input : string) (g : G.t) (dict : D.t) : G.t =
+let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
   match input with
   | "#help" ->
       print_newline ();
@@ -17,7 +18,7 @@ let command (input : string) (g : G.t) (dict : D.t) : G.t =
         \ #reset - resets the current game";
       print_newline ();
       g
-  | "#new" -> G.build None dict
+  | "#new" -> G.build None (choose_shape ()) dict
   | "#found" ->
       print_newline ();
       print_endline "Words Found So Far:";
@@ -37,7 +38,7 @@ let command (input : string) (g : G.t) (dict : D.t) : G.t =
       g
 
 (* read-eval-print loop *)
-let rec repl (game : G.t) (dict : D.t) : unit =
+and repl (game : G.t) (dict : D.t) : unit =
   G.print game;
   print_string "Type a word: ";
   let input = read_line () in
@@ -50,10 +51,28 @@ let rec repl (game : G.t) (dict : D.t) : unit =
         print_newline ();
         repl (G.update game input) dict
 
+and choose_shape () : MultiBoard.shape =
+  print_string "Choose a shape for your game board: \n \n   - OneHex";
+  print_newline ();
+  let input = read_line () in
+  let shape_option =
+    match input with
+    | "OneHex" -> MultiBoard.shape_of_string "OneHex"
+    | _ -> None
+  in
+  match shape_option with
+  | Some shape -> shape
+  | None ->
+      print_newline ();
+      print_string "Not a valid board shape. Please choose again!";
+      print_newline ();
+      choose_shape ()
+
 (* Main Processing *)
 let () =
   Random.self_init ();
   print_endline "\n\nWelcome to Word Hex!\n";
+  let shape = choose_shape () in
   print_endline
     "How to play: Type any word you can construct from what is given.\n";
   print_endline "Press enter to continue";
@@ -62,6 +81,5 @@ let () =
   let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
   (*TODO: UPDATE DICT_LST*)
   let dict = D.of_list dict_lst in
-  let game = G.build None dict in
-  ();
+  let game = G.build None shape dict in
   repl game dict

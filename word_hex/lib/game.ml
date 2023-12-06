@@ -1,11 +1,12 @@
 open Board
+open Multi
 module D = TrieDictionary.Make
 
 (** The signature of a word_hex game. *)
 module type GameType = sig
   type t
 
-  val build : string list option -> D.t -> t
+  val build : string list option -> MultiBoard.shape -> D.t -> t
   val update : t -> string -> t
   val found : t -> string list
   val shuffle : t -> t
@@ -13,22 +14,21 @@ module type GameType = sig
   val print : t -> unit
 end
 
-module Game (Board : BoardType) : GameType = struct
-  module Board : BoardType = Board
-
+module Game : GameType = struct
   type t = {
     score : int;
     found_words : string list;
-    board : Board.t;
+    board : MultiBoard.t;
     dictionary : D.t;
     message : string;
   }
 
-  let build (words : string list option) (dict : D.t) : t =
+  let build (words : string list option) (shape : MultiBoard.shape) (dict : D.t)
+      : t =
     {
       score = 0;
       found_words = [];
-      board = Board.build words;
+      board = MultiBoard.build shape words;
       dictionary = dict;
       message = "";
     }
@@ -47,7 +47,7 @@ module Game (Board : BoardType) : GameType = struct
      otherwise.*)
   let valid_word (word : string) (game : t) : bool =
     let new_word = new_word word game.found_words in
-    let valid_board_word = Board.contains word game.board in
+    let valid_board_word = MultiBoard.contains word game.board in
     let valid_dictionary_word = D.contains word game.dictionary in
     new_word && valid_board_word && valid_dictionary_word
 
@@ -79,7 +79,7 @@ module Game (Board : BoardType) : GameType = struct
   let found (game : t) : string list = game.found_words
 
   let shuffle (game : t) : t =
-    let shuffled_board = Board.shuffle game.board in
+    let shuffled_board = MultiBoard.shuffle game.board in
     { game with board = shuffled_board }
 
   let reset (game : t) : t =
@@ -88,7 +88,7 @@ module Game (Board : BoardType) : GameType = struct
   let print (game : t) : unit =
     let score = string_of_int game.score in
     print_endline ("Score: " ^ score ^ "\n\n");
-    Board.print game.board;
+    MultiBoard.print game.board;
     print_endline game.message;
     print_newline ()
 end
