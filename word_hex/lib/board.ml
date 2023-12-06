@@ -92,6 +92,15 @@ let rec union lst1 lst2 =
   | [] -> lst2
   | h :: t -> h :: union t (List.filter (fun c -> c <> h) lst2)
 
+(** difference lst1 lst2 is the difference of the two lists; it contains every
+    element in lst1 that is not in lst2*)
+let rec difference lst1 lst2 =
+  match lst1 with
+  | [] -> []
+  | h :: t ->
+      if List.exists (fun x -> x = h) lst2 then difference t lst2
+      else h :: difference t lst2
+
 (** Takes the first n elements from the list. If the length of the list is
     shorter than n, returns the whole list. Requires, n >= 0.*)
 let rec take n lst =
@@ -134,13 +143,18 @@ let rec randomize (acc : 'a list) (lst : 'a list) : 'a list =
       let next = List.nth lst (Random.int len) in
       randomize (acc @ [ next ]) (List.filter (fun x -> x != next) lst)
 
-(** Returns if the given hex contains the word. The given hex contains the word
-    all characters of the word are found within the hex*)
-let rec hex_contains (h : hex) (word : string) : bool =
+(** Returns if all characters of the word are found within the given hex*)
+let rec hex_contains_helper (h : hex) (word : string) : bool =
   let hlst = [ h.center; h.h0; h.h1; h.h2; h.h3; h.h4; h.h5 ] in
   String.fold_left
     (fun bl chr -> bl && List.exists (fun lst_chr -> lst_chr = chr) hlst)
     true word
+
+(** Returns if the given hex contains the word. The given hex contains the word
+    all characters of the word are found within the hex, and the center letter
+    of the hex is found within the word.*)
+let hex_contains (h : hex) (word : string) : bool =
+  String.contains word h.center && hex_contains_helper h word
 
 let hex_is_pangram (h : hex) (word : string) : bool =
   String.contains word h.center
@@ -188,11 +202,11 @@ module HexBoard : BoardType = struct
 
   let contains (word : string) (board : t) : bool =
     let word_upper = String.uppercase_ascii word in
-    String.length word >= 4
-    && String.contains word_upper board.center
-    && hex_contains board word_upper
+    String.length word >= 4 && hex_contains board word_upper
 
-  let is_pangram (word : string) (board : t) : bool = hex_contains board word
+  let is_pangram (word : string) (board : t) : bool =
+    let word_upper = String.uppercase_ascii word in
+    hex_is_pangram board word_upper
 
   let shuffle (board : t) : t =
     let outer =
@@ -251,12 +265,143 @@ end
 (*******************************************************)
 (***************** TWO HEX MODULE **********************)
 
-(* module TwoHex : BoardType = struct type t = hex * hex
+module TwoHex : BoardType = struct
+  type t = hex * hex
 
-   let build = failwith "Unimplemented" let contains = failwith "Unimplemented"
-   let shuffle = failwith "Unimplemented" let print = failwith "Unimplemented"
-   let get_letters = failwith "Unimplemented" let board_of_letters = failwith
-   "Unimplemented" end *)
+  let build_random () : t =
+    let combo1, combo2 =
+      match pick_random combinations 2 with
+      | [ c1; c2 ] -> (c1, c2)
+      | _ -> assert false
+    in
+    let vowels1 = pick_random vowel_list 2 in
+    let vowels2 = pick_random vowel_list 2 in
+    let cc1 = pick_random common_consonant_list 2 in
+    let cc2 = pick_random common_consonant_list 2 in
+    let uc1 = pick_random uncommon_consonant_list 1 in
+    let uc2 = pick_random uncommon_consonant_list 1 in
+    let chars1 = randomize [] (take 5 (union combo1 (vowels1 @ cc1 @ uc1))) in
+    let chars2 = randomize [] (take 5 (union combo2 (vowels2 @ cc2 @ uc2))) in
+    let overlap_v = pick_random vowel_list 1 in
+    let overlap_cc = pick_random common_consonant_list 10 in
+    let overlap =
+      randomize []
+        (take 2 (difference (overlap_v @ overlap_cc) (chars1 @ chars2)))
+    in
+    ( {
+        center = List.nth chars1 0;
+        h0 = List.nth chars1 1;
+        h1 = List.nth chars1 2;
+        h2 = List.nth overlap 0;
+        h3 = List.nth overlap 1;
+        h4 = List.nth chars1 3;
+        h5 = List.nth chars1 4;
+      },
+      {
+        center = List.nth chars2 0;
+        h0 = List.nth overlap 0;
+        h1 = List.nth chars2 1;
+        h2 = List.nth chars2 2;
+        h3 = List.nth chars2 3;
+        h4 = List.nth chars2 4;
+        h5 = List.nth overlap 1;
+      } )
+
+  let build (input : string list option) : t =
+    ignore input;
+    build_random ()
+
+  let contains (word : string) ((b1, b2) : t) : bool =
+    let word_upper = String.uppercase_ascii word in
+    String.length word >= 4
+    && (hex_contains b1 word_upper || hex_contains b2 word_upper)
+
+  let is_pangram (word : string) ((b1, b2) : t) : bool =
+    let word_upper = String.uppercase_ascii word in
+    hex_is_pangram b1 word_upper || hex_is_pangram b2 word_upper
+
+  let shuffle b = b
+
+  let print (b1, b2) =
+    let short = "     " in
+    let med = "         " in
+    let long = short ^ med ^ "  " in
+    print_string short;
+    print_char b1.h0;
+    print_newline ();
+    print_char b1.h5;
+    print_string med;
+    print_char b1.h1;
+    print_newline ();
+    print_string short;
+    print_char b1.center;
+    print_newline ();
+    print_char b1.h4;
+    print_string med;
+    print_char b1.h2;
+    print_newline ();
+    print_string short;
+    print_char b1.h3;
+    print_string med;
+    print_char b2.h1;
+    print_newline ();
+    print_string long;
+    print_char b2.center;
+    print_newline ();
+    print_string short;
+    print_char b2.h4;
+    print_string med;
+    print_char b2.h2;
+    print_newline ();
+    print_string long;
+    print_char b2.center;
+    print_newline ()
+
+  let get_letters (b1, b2) =
+    [
+      b1.center;
+      b1.h0;
+      b1.h1;
+      b1.h2;
+      b1.h3;
+      b1.h4;
+      b1.h5;
+      b2.center;
+      b2.h0;
+      b2.h1;
+      b2.h2;
+      b2.h3;
+      b2.h4;
+      b2.h5;
+    ]
+
+  let board_of_letters lst =
+    assert (List.length lst = 14);
+    ( {
+        center = List.nth lst 0;
+        h0 = List.nth lst 1;
+        h1 = List.nth lst 2;
+        h2 = List.nth lst 3;
+        h3 = List.nth lst 4;
+        h4 = List.nth lst 5;
+        h5 = List.nth lst 6;
+      },
+      {
+        center = List.nth lst 7;
+        h0 = List.nth lst 8;
+        h1 = List.nth lst 9;
+        h2 = List.nth lst 10;
+        h3 = List.nth lst 11;
+        h4 = List.nth lst 12;
+        h5 = List.nth lst 13;
+      } )
+
+  let board_data ((b1, b2) : t) : (char * char list) list =
+    [
+      (b1.center, [ b1.h0; b1.h1; b1.h2; b1.h3; b1.h4; b1.h5 ]);
+      (b2.center, [ b2.h0; b2.h1; b2.h2; b2.h3; b2.h4; b2.h5 ]);
+    ]
+end
 
 (**********************************************************)
 (***************** TRIPLE BOARD MODULE ********************)
@@ -264,9 +409,10 @@ end
 (* module TripleBoard : BoardType = struct type t = hex
 
    let build = failwith "Unimplemented" let contains = failwith "Unimplemented"
-   let shuffle = failwith "Unimplemented" let print = failwith "Unimplemented"
-   let get_letters = failwith "Unimplemented" let board_of_letters = failwith
-   "Unimplemented" end *)
+   let is_pangram = failwith "Unimplemented" let shuffle = failwith
+   "Unimplemented" let print = failwith "Unimplemented" let get_letters =
+   failwith "Unimplemented" let board_of_letters = failwith "Unimplemented" let
+   board_data = failwith "Unimplemented" end *)
 
 (*******************************************************)
 (***************** FLOWER BOARD MODULE ********************)
@@ -274,6 +420,7 @@ end
 (* module FlowerBoard : BoardType = struct type t = hex
 
    let build = failwith "Unimplemented" let contains = failwith "Unimplemented"
-   let shuffle = failwith "Unimplemented" let print = failwith "Unimplemented"
-   let get_letters = failwith "Unimplemented" let board_of_letters = failwith
-   "Unimplemented" end *)
+   let is_pangram = failwith "Unimplemented" let shuffle = failwith
+   "Unimplemented" let print = failwith "Unimplemented" let get_letters =
+   failwith "Unimplemented" let board_of_letters = failwith "Unimplemented" let
+   board_data = failwith "Unimplemented" end *)
