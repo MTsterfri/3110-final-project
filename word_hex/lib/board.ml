@@ -58,12 +58,20 @@ let common_consonant_list =
     (17, 'R');
     (18, 'S');
     (19, 'T');
-    (24, 'Y');
   ]
 
 (** Association List for uncommon uppercase english consonants*)
 let uncommon_consonant_list =
-  [ (9, 'J'); (10, 'K'); (16, 'Q'); (21, 'V'); (22, 'W'); (23, 'X'); (25, 'Z') ]
+  [
+    (9, 'J');
+    (10, 'K');
+    (16, 'Q');
+    (21, 'V');
+    (22, 'W');
+    (23, 'X');
+    (25, 'Z');
+    (24, 'Y');
+  ]
 
 (* Debugging Helper function to print a character list*)
 let rec print_char_list_helper lst =
@@ -325,7 +333,7 @@ module TwoHex : BoardType = struct
   let print (b1, b2) =
     let short = "     " in
     let med = "         " in
-    let long = short ^ med ^ "  " in
+    let long = med ^ " " in
     print_string short;
     print_char b1.h0;
     print_newline ();
@@ -354,7 +362,7 @@ module TwoHex : BoardType = struct
     print_char b2.h2;
     print_newline ();
     print_string long;
-    print_char b2.center;
+    print_char b2.h3;
     print_newline ()
 
   let get_letters (b1, b2) =
