@@ -1,11 +1,24 @@
 open Board
 open Multi
 module D = TrieDictionary.Make
+module DList = ListDictionary.Make
 
 (** The signature of a word_hex game. *)
 module type GameType = sig
   type t
   (** Representation type of the word_hex game. *)
+
+  type rank =
+    | QueenBee of float
+    | Genius of float
+    | Amazing of float
+    | Great of float
+    | Nice of float
+    | Solid of float
+    | Good of float
+    | MovingUp of float
+    | GoodStart of float
+    | Beginner of float
 
   val build : string list option -> MultiBoard.shape -> D.t -> t
   (** Given a list of custom words [words] and the number of hexes that the game
