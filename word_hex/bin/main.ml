@@ -63,4 +63,5 @@ let () =
   (*TODO: UPDATE DICT_LST*)
   let dict = D.of_list dict_lst in
   let game = G.build None dict in
+  ();
   repl game dict
