@@ -1,12 +1,13 @@
 open Board
-open Dictionary
+open Multi
+module D = TrieDictionary.Make
 
 (** The signature of a word_hex game. *)
 module type GameType = sig
   type t
   (** Representation type of the word_hex game. *)
 
-  val build : string list option -> Dictionary.t -> t
+  val build : string list option -> MultiBoard.shape -> D.t -> t
   (** Given a list of custom words [words] and the number of hexes that the game
       board should have [hexes], returns a word_hex game. *)
 
@@ -31,5 +32,5 @@ module type GameType = sig
   (** Given a game [game], prints a visual representation of [game]. *)
 end
 
+module Game : GameType
 (** A game based on a board [Board] and a dictionary [Dictionary]. *)
-module Game (Board : BoardType) : GameType
