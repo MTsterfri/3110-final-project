@@ -20,24 +20,45 @@ let list_dict = DList.of_list [ "abcdefg"; "hi"; "hello" ]
 let board =
   MultiBoard.board_of_letters
     (Option.get (MultiBoard.shape_of_string "Hex"))
-    [ 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g' ]
+    [ 'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G' ]
+
+let highest_score_board =
+  MultiBoard.board_of_letters
+    (Option.get (MultiBoard.shape_of_string "Hex"))
+    [ 'I'; 'L'; 'O'; 'F'; 'T'; 'N'; 'C' ]
+
+let highest_score_dict = D.of_list [ "conflict"; "cliff"; "fiction"; "inn" ]
 
 let game =
   Game.build_of_board None
     (Option.get (MultiBoard.shape_of_string "Hex"))
     trie_dict board
 
+let highest_score_game =
+  Game.build_of_board None
+    (Option.get (MultiBoard.shape_of_string "Hex"))
+    highest_score_dict highest_score_board
+
 let game_tests =
   [
     make_test "game contains pangram"
       (Game.contains_pangram trie_dict board)
       true;
-    make_test "all_filtered_words_game"
+    make_test "all_filtered_words_game()"
       (DList.to_list (Game.all_filtered_words_game game))
       [ "abcdefg" ];
-    make_test "MultiBoard.is_pangram"
-      (MultiBoard.is_pangram "abcdefg" board)
-      true;
+    make_test "highest_possible_score()"
+      (Game.get_highest_possible_score highest_score_game)
+      27;
+    make_test "score_calc_game(), pangram"
+      (Game.score_calc_game "conflict" highest_score_game)
+      15;
+    make_test "score_calc_game(), five-letters"
+      (Game.score_calc_game "cliff" highest_score_game)
+      5;
+    make_test "score_calc_game(), seven-letters"
+      (Game.score_calc_game "fiction" highest_score_game)
+      7;
   ]
 
 (*****************************************************************)
@@ -191,4 +212,7 @@ let suite =
   >::: List.flatten
          [ game_tests; board_tests; ListDictTests.tests; TrieDictTests.tests ]
 
-let () = run_test_tt_main suite
+let () =
+  print_string
+    (string_of_int (Game.get_highest_possible_score highest_score_game));
+  run_test_tt_main suite

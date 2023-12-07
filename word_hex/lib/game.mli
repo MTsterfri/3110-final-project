@@ -9,16 +9,16 @@ module type GameType = sig
   (** Representation type of the word_hex game. *)
 
   type rank =
-    | QueenBee of float
-    | Genius of float
-    | Amazing of float
-    | Great of float
-    | Nice of float
-    | Solid of float
-    | Good of float
-    | MovingUp of float
-    | GoodStart of float
-    | Beginner of float
+    | QueenBee of int
+    | Genius of int
+    | Amazing of int
+    | Great of int
+    | Nice of int
+    | Solid of int
+    | Good of int
+    | MovingUp of int
+    | GoodStart of int
+    | Beginner of int
 
   val build : string list option -> MultiBoard.shape -> D.t -> t
   (** Given a list of custom words [words] and the number of hexes that the game
@@ -32,6 +32,9 @@ module type GameType = sig
 
   val get_dict : t -> D.t
   (**Returns the dictionary [dict] of a given game [game]*)
+
+  val get_score : t -> int
+  (**Returns the score [score] of a given game [game]*)
 
   val update : t -> string -> t
   (** Given an original game [game] and a guessed word [word], returns the
@@ -66,7 +69,9 @@ module type GameType = sig
      dictionary that contain the letters in the board of the [game], filtered on
      the fact that the words must contain the center letter.*)
 
-  val all_words : t -> string list
+  val get_highest_possible_score : t -> int
+  val score_calc_game : string -> t -> int
+  val print_rankings : t -> t
 
   val print : t -> unit
   (** Given a game [game], prints a visual representation of [game]. *)
