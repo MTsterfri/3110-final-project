@@ -27,6 +27,7 @@ module type GameType = sig
   val get_board : t -> MultiBoard.t
   val get_dict : t -> D.t
   val get_score : t -> int
+  val get_rank_str : t -> string
   val update : t -> string -> t
   val found : t -> string list
   val shuffle : t -> t
@@ -96,6 +97,7 @@ module Game : GameType = struct
   and get_board (game : t) : MultiBoard.t = game.board
   and get_dict (game : t) : D.t = game.dictionary
   and get_score (game : t) : int = game.score
+  and get_rank_str (game : t) : string = rank_to_string game.rank
 
   and calculate_ranks (game : t) : rank list =
     let hs = float_of_int game.highest_possible_score in

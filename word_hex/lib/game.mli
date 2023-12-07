@@ -36,6 +36,9 @@ module type GameType = sig
   val get_score : t -> int
   (**Returns the score [score] of a given game [game]*)
 
+  val get_rank_str : t -> string
+  (**Returns a string version of the rank [rank] of a given game [game]*)
+
   val update : t -> string -> t
   (** Given an original game [game] and a guessed word [word], returns the
       updated game *)

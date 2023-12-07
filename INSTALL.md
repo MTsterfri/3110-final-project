@@ -1,6 +1,8 @@
 For information on installing OCaml, 
 see https://cs3110.github.io/textbook/chapters/preface/install.html
-No extra installation is needed for this project.
+
+raylib-ocaml can be installed via opam:
+on command line type `opam install raylib`
 
 1. Enter into /word_hex folder. Can be done with 'cd word_hex'
 2. Type 'dune build'
