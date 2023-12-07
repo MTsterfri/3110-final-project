@@ -6,6 +6,7 @@ module type BoardType = sig
   val contains : string -> t -> bool
   val is_pangram : string -> t -> bool
   val shuffle : t -> t
+  val string_of_board : t -> string
   val print : t -> unit
   val get_letters : t -> char list
   val board_of_letters : char list -> t
@@ -231,26 +232,21 @@ module HexBoard : BoardType = struct
       h5 = List.nth outer 5;
     }
 
-  let print (board : t) : unit =
+  let string_of_board (board : t) : string =
     let short = "     " in
     let long = "         " in
-    print_string short;
-    print_char board.h0;
-    print_newline ();
-    print_char board.h5;
-    print_string long;
-    print_char board.h1;
-    print_newline ();
-    print_string short;
-    print_char board.center;
-    print_newline ();
-    print_char board.h4;
-    print_string long;
-    print_char board.h2;
-    print_newline ();
-    print_string short;
-    print_char board.h3;
-    print_newline ()
+    short ^ String.make 1 board.h0 ^ "\n" ^ String.make 1 board.h5 ^ long
+    ^ String.make 1 board.h1 ^ "\n" ^ short ^ String.make 1 board.center ^ "\n"
+    ^ String.make 1 board.h4 ^ long ^ String.make 1 board.h2 ^ "\n" ^ short
+    ^ String.make 1 board.h3 ^ "\n"
+
+  let print (board : t) : unit = print_string (string_of_board board)
+  (* let short = " " in let long = " " in print_string short; print_char
+     board.h0; print_newline (); print_char board.h5; print_string long;
+     print_char board.h1; print_newline (); print_string short; print_char
+     board.center; print_newline (); print_char board.h4; print_string long;
+     print_char board.h2; print_newline (); print_string short; print_char
+     board.h3; print_newline () *)
 
   let get_letters b = [ b.center; b.h0; b.h1; b.h2; b.h3; b.h4; b.h5 ]
 
@@ -330,40 +326,27 @@ module TwoHex : BoardType = struct
 
   let shuffle b = b
 
-  let print (b1, b2) =
+  let string_of_board ((b1, b2) : t) : string =
     let short = "     " in
     let med = "         " in
     let long = med ^ " " in
-    print_string short;
-    print_char b1.h0;
-    print_newline ();
-    print_char b1.h5;
-    print_string med;
-    print_char b1.h1;
-    print_newline ();
-    print_string short;
-    print_char b1.center;
-    print_newline ();
-    print_char b1.h4;
-    print_string med;
-    print_char b1.h2;
-    print_newline ();
-    print_string short;
-    print_char b1.h3;
-    print_string med;
-    print_char b2.h1;
-    print_newline ();
-    print_string long;
-    print_char b2.center;
-    print_newline ();
-    print_string short;
-    print_char b2.h4;
-    print_string med;
-    print_char b2.h2;
-    print_newline ();
-    print_string long;
-    print_char b2.h3;
-    print_newline ()
+    short ^ String.make 1 b1.h0 ^ "\n" ^ String.make 1 b1.h5 ^ med
+    ^ String.make 1 b1.h1 ^ "\n" ^ short ^ String.make 1 b1.center ^ "\n"
+    ^ String.make 1 b1.h4 ^ med ^ String.make 1 b1.h2 ^ "\n" ^ short
+    ^ String.make 1 b1.h3 ^ med ^ String.make 1 b2.h1 ^ "\n" ^ long
+    ^ String.make 1 b2.center ^ "\n" ^ short ^ String.make 1 b2.h4 ^ med
+    ^ String.make 1 b2.h2 ^ "\n" ^ long ^ String.make 1 b2.h3 ^ "\n"
+
+  let print board = print_string (string_of_board board)
+  (* let short = " " in let med = " " in let long = med ^ " " in print_string
+     short; print_char b1.h0; print_newline (); print_char b1.h5; print_string
+     med; print_char b1.h1; print_newline (); print_string short; print_char
+     b1.center; print_newline (); print_char b1.h4; print_string med; print_char
+     b1.h2; print_newline (); print_string short; print_char b1.h3; print_string
+     med; print_char b2.h1; print_newline (); print_string long; print_char
+     b2.center; print_newline (); print_string short; print_char b2.h4;
+     print_string med; print_char b2.h2; print_newline (); print_string long;
+     print_char b2.h3; print_newline () *)
 
   let get_letters (b1, b2) =
     [
@@ -414,13 +397,222 @@ end
 (**********************************************************)
 (***************** TRIPLE BOARD MODULE ********************)
 
-(* module TripleBoard : BoardType = struct type t = hex
+module TripleBoard : BoardType = struct
+  type t = {
+    left : hex;
+    right : hex;
+    down : hex;
+    center : hex;
+  }
 
-   let build = failwith "Unimplemented" let contains = failwith "Unimplemented"
-   let is_pangram = failwith "Unimplemented" let shuffle = failwith
-   "Unimplemented" let print = failwith "Unimplemented" let get_letters =
-   failwith "Unimplemented" let board_of_letters = failwith "Unimplemented" let
-   board_data = failwith "Unimplemented" end *)
+  let build input =
+    ignore input;
+    let lst =
+      [
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+      ]
+    in
+    {
+      left =
+        {
+          center = List.nth lst 0;
+          h0 = List.nth lst 1;
+          h1 = List.nth lst 2;
+          h2 = List.nth lst 3;
+          h3 = List.nth lst 4;
+          h4 = List.nth lst 5;
+          h5 = List.nth lst 6;
+        };
+      right =
+        {
+          center = List.nth lst 7;
+          h0 = List.nth lst 8;
+          h1 = List.nth lst 9;
+          h2 = List.nth lst 10;
+          h3 = List.nth lst 11;
+          h4 = List.nth lst 12;
+          h5 = List.nth lst 13;
+        };
+      down =
+        {
+          center = List.nth lst 14;
+          h0 = List.nth lst 15;
+          h1 = List.nth lst 16;
+          h2 = List.nth lst 17;
+          h3 = List.nth lst 18;
+          h4 = List.nth lst 19;
+          h5 = List.nth lst 20;
+        };
+      center =
+        {
+          center = List.nth lst 21;
+          h0 = List.nth lst 22;
+          h1 = List.nth lst 23;
+          h2 = List.nth lst 24;
+          h3 = List.nth lst 25;
+          h4 = List.nth lst 26;
+          h5 = List.nth lst 27;
+        };
+    }
+
+  let contains (word : string)
+      ({ left = lh; right = rh; down = dh; center = ch } : t) : bool =
+    let word_upper = String.uppercase_ascii word in
+    String.length word >= 4
+    && (hex_contains lh word_upper || hex_contains rh word_upper
+      || hex_contains dh word_upper || hex_contains ch word_upper)
+
+  let is_pangram (word : string)
+      ({ left = lh; right = rh; down = dh; center = ch } : t) : bool =
+    let word_upper = String.uppercase_ascii word in
+    hex_is_pangram lh word_upper
+    || hex_is_pangram rh word_upper
+    || hex_is_pangram dh word_upper
+    || hex_is_pangram ch word_upper
+
+  let shuffle b = b
+
+  let string_of_board ({ left = lh; right = rh; down = dh; center = ch } : t) :
+      string =
+    let short = "     " in
+    let med = "         " in
+    let long = med ^ " " in
+    short ^ String.make 1 lh.h0 ^ med ^ String.make 1 rh.h0 ^ "\n"
+    ^ String.make 1 lh.h5 ^ med ^ String.make 1 lh.h1 ^ med
+    ^ String.make 1 rh.h1 ^ "\n" ^ short ^ String.make 1 lh.center ^ med
+    ^ String.make 1 rh.center ^ "\n" ^ String.make 1 lh.h4 ^ med
+    ^ String.make 1 lh.h2 ^ med ^ String.make 1 rh.h2 ^ "\n" ^ short
+    ^ String.make 1 lh.h3 ^ med ^ String.make 1 rh.h3 ^ "\n" ^ long
+    ^ String.make 1 dh.center ^ "\n" ^ short ^ String.make 1 dh.h4 ^ med
+    ^ String.make 1 dh.h2 ^ "\n" ^ long ^ String.make 1 dh.h3 ^ "\n"
+
+  let print (board : t) : unit = print_string (string_of_board board)
+  (* let short = " " in let med = " " in let long = med ^ " " in print_string
+     short; print_char lh.h0; print_string med; print_char rh.h0; print_newline
+     (); print_char lh.h5; print_string med; print_char lh.h1; print_string med;
+     print_char rh.h1; print_newline (); print_string short; print_char
+     lh.center; print_string med; print_char rh.center; print_newline ();
+     print_char lh.h4; print_string med; print_char lh.h2; print_string med;
+     print_char rh.h2; print_newline (); print_string short; print_char lh.h3;
+     print_string med; print_char rh.h3; print_newline (); print_string long;
+     print_char dh.center; print_newline (); print_string short; print_char
+     dh.h4; print_string med; print_char dh.h2; print_newline (); print_string
+     long; print_char dh.h3; print_newline () *)
+
+  let get_letters ({ left = lh; right = rh; down = dh; center = ch } : t) :
+      char list =
+    [
+      lh.center;
+      lh.h0;
+      lh.h1;
+      lh.h2;
+      lh.h3;
+      lh.h4;
+      lh.h5;
+      rh.center;
+      rh.h0;
+      rh.h1;
+      rh.h2;
+      rh.h3;
+      rh.h4;
+      rh.h5;
+      dh.center;
+      dh.h0;
+      dh.h1;
+      dh.h2;
+      dh.h3;
+      dh.h4;
+      dh.h5;
+      ch.center;
+      ch.h0;
+      ch.h1;
+      ch.h2;
+      ch.h3;
+      ch.h4;
+      ch.h5;
+    ]
+
+  let board_of_letters lst =
+    assert (List.length lst = 28);
+    {
+      left =
+        {
+          center = List.nth lst 0;
+          h0 = List.nth lst 1;
+          h1 = List.nth lst 2;
+          h2 = List.nth lst 3;
+          h3 = List.nth lst 4;
+          h4 = List.nth lst 5;
+          h5 = List.nth lst 6;
+        };
+      right =
+        {
+          center = List.nth lst 7;
+          h0 = List.nth lst 8;
+          h1 = List.nth lst 9;
+          h2 = List.nth lst 10;
+          h3 = List.nth lst 11;
+          h4 = List.nth lst 12;
+          h5 = List.nth lst 13;
+        };
+      down =
+        {
+          center = List.nth lst 14;
+          h0 = List.nth lst 15;
+          h1 = List.nth lst 16;
+          h2 = List.nth lst 17;
+          h3 = List.nth lst 18;
+          h4 = List.nth lst 19;
+          h5 = List.nth lst 20;
+        };
+      center =
+        {
+          center = List.nth lst 21;
+          h0 = List.nth lst 22;
+          h1 = List.nth lst 23;
+          h2 = List.nth lst 24;
+          h3 = List.nth lst 25;
+          h4 = List.nth lst 26;
+          h5 = List.nth lst 27;
+        };
+    }
+
+  let board_data ({ left = lh; right = rh; down = dh; center = ch } : t) :
+      (char * char list) list =
+    [
+      (lh.center, [ lh.h0; lh.h1; lh.h2; lh.h3; lh.h4; lh.h5 ]);
+      (rh.center, [ rh.h0; rh.h1; rh.h2; rh.h3; rh.h4; rh.h5 ]);
+      (dh.center, [ dh.h0; dh.h1; dh.h2; dh.h3; dh.h4; dh.h5 ]);
+      (ch.center, [ ch.h0; ch.h1; ch.h2; ch.h3; ch.h4; ch.h5 ]);
+    ]
+end
 
 (*******************************************************)
 (***************** FLOWER BOARD MODULE ********************)
