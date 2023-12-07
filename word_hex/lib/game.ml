@@ -278,9 +278,12 @@ module Game : GameType = struct
   and best_board (count : int) (shape : MultiBoard.shape)
       (custom_words : string list option) (dict : D.t) : MultiBoard.t =
     match find_best_board count shape dict custom_words with
-    | Some board -> board
+    | Some board ->
+        good_boards_list := [];
+        board
     | None ->
         let good_boards = !good_boards_list in
+        good_boards_list := [];
         List.fold_left
           (fun best_board_result elem ->
             if
