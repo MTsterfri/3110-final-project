@@ -93,16 +93,17 @@ let rec other_loop () =
       let game = G.build None shape dict in
       repl game dict
 
-let rec one_loop () =
+let rec one_loop (game : G.t) (dict : D.t) =
   match Raylib.window_should_close () with
   | true -> Raylib.close_window ()
   | false ->
       let open Raylib in
       begin_drawing ();
       clear_background Color.raywhite;
+      draw_text ("Score : " ^ string_of_int 0) 30 25 20 Color.darkgray;
       draw_text "Unimplemented One Hex" 280 200 20 Color.darkgray;
       end_drawing ();
-      one_loop ()
+      one_loop game dict
 
 (* completed up to here *)
 let rec intro_loop () =
@@ -130,7 +131,13 @@ let rec intro_loop () =
       let on_one = x >= 250. && x <= 350. && y >= 350. && y <= 400. in
       let on_other = x >= 450. && x <= 550. && y >= 350. && y <= 400. in
       if isDown && on_other then other_loop ()
-      else if isDown && on_one then one_loop ()
+      else if isDown && on_one then
+        let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
+        let dict = D.of_list dict_lst in
+        let game =
+          G.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
+        in
+        one_loop game dict
       else intro_loop ()
 
 let () =
