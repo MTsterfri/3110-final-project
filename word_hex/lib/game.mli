@@ -19,6 +19,8 @@ module type GameType = sig
     | MovingUp of int
     | GoodStart of int
     | Beginner of int
+        (**Representation type of the possible ranks earned during game play.
+           Each rank stores the minimum score needed to reach each rank.*)
 
   val build : string list option -> MultiBoard.shape -> D.t -> t
   (** Given a list of custom words [words] and the number of hexes that the game
@@ -58,23 +60,38 @@ module type GameType = sig
 
   val best_board :
     int -> MultiBoard.shape -> string list option -> D.t -> MultiBoard.t
-  (*Given a count of boards [count], the shape of the board [shape], a list of
-    custom words [custom_words], a dictionary [dict], returns the best of
-    [count] number of boards. While making the boards, returns the first board
-    that includes a pangram. If the board does not contain a pangram, returns
-    the board with the highest possible score. *)
+  (**Given a count of boards [count], the shape of the board [shape], a list of
+     custom words [custom_words], a dictionary [dict], returns the best of
+     [count] number of boards. While making the boards, returns the first board
+     that includes a pangram. If the board does not contain a pangram, returns
+     the board with the highest possible score. *)
 
   val contains_pangram : D.t -> MultiBoard.t -> bool
   (**Returns whether or not the given game [game]*)
 
-  val all_filtered_words_game : t -> DList.t
+  val all_filtered_words_board : D.t -> MultiBoard.t -> DList.t
   (**Given a game [game], returns a ListDictionary of the words in the
      dictionary that contain the letters in the board of the [game], filtered on
      the fact that the words must contain the center letter.*)
 
+  val all_filtered_words_game_str : t -> string
+  (**Returns a string of all the words in a game [game] that can earn the player
+     points. Each word in [game] is on a new line in the string*)
+
   val get_highest_possible_score : t -> int
-  val score_calc_game : string -> t -> int
+  (**Returns the highest_possible_score a player can earn playing a game [game]*)
+
+  val score_calc_board : string -> MultiBoard.t -> int
+  (**Given a board [board], and a word [word], calculates the score earned by
+     that [word] on the [board].*)
+
+  val calculate_rank_str : int -> int -> string
+  (**Given a player's current score [s] and the high score of a game
+     [high_score], return the string version of the player's current rank.*)
+
   val print_rankings : t -> t
+  (**Given a game [game], prints the rankings and the score needed to reach each
+     ranking for that [game]. Returns the [game]. *)
 
   val print : t -> unit
   (** Given a game [game], prints a visual representation of [game]. *)

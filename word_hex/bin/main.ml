@@ -2,10 +2,9 @@ open Word_hex
 open Board
 open Multi
 open Game
-module G = Game
 module D = TrieDictionary.Make
 
-let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
+let rec command (input : string) (g : Game.t) (dict : D.t) : Game.t =
   match input with
   | "#help" ->
       print_newline ();
@@ -17,15 +16,16 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
         \ #shuffle - shuffles the letters on the game board\n\
         \ #reset - resets the current game\n\
         \ #rankings - shows the rankings and the minimum score required to \
-         earn each rank";
+         earn each rank\n\
+        \ #solution - shows the list of all possible words";
       print_newline ();
       g
   | "#new" ->
-      if not (G.contains_pangram dict (G.get_board g)) then (
+      if not (Game.contains_pangram dict (Game.get_board g)) then (
         print_endline "Please note that this board does not contain a pangram.";
         print_newline ())
       else ();
-      G.build None (choose_shape ()) dict
+      Game.build None (choose_shape ()) dict
   | "#found" ->
       print_newline ();
       print_endline "Words Found So Far:";
@@ -34,20 +34,25 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
            (fun x ->
              print_string x;
              print_newline ())
-           (G.found g));
+           (Game.found g));
       print_newline ();
       g
-  | "#shuffle" -> G.shuffle g
-  | "#reset" -> G.reset g
-  | "#rankings" -> G.print_rankings g
+  | "#shuffle" -> Game.shuffle g
+  | "#reset" -> Game.reset g
+  | "#rankings" -> Game.print_rankings g
+  | "#solution" ->
+      print_newline ();
+      print_string (Game.all_filtered_words_game_str g);
+      print_newline ();
+      g
   | _ ->
       print_endline "Not a Valid Command";
       print_newline ();
       g
 
 (* read-eval-print loop *)
-and repl (game : G.t) (dict : D.t) : unit =
-  G.print game;
+and repl (game : Game.t) (dict : D.t) : unit =
+  Game.print game;
   print_string "Type a word: ";
   let input = read_line () in
   if String.length input > 0 && input.[0] = '#' then
@@ -57,7 +62,7 @@ and repl (game : G.t) (dict : D.t) : unit =
     | "" -> print_endline "bye"
     | _ ->
         print_newline ();
-        repl (G.update game input) dict
+        repl (Game.update game input) dict
 
 and choose_shape () : MultiBoard.shape =
   print_string "Choose a shape for your game board: \n \n   - Hex \n   - TwoHex";
@@ -98,10 +103,14 @@ let rec other_loop () =
       print_endline "Please wait while the game is set up...\n";
       let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
       let dict = D.of_list dict_lst in
-      let game = G.build None shape dict in
+      let game = Game.build None shape dict in
+      if not (Game.contains_pangram dict (Game.get_board game)) then (
+        print_endline "Please note that this board does not contain a pangram.";
+        print_newline ())
+      else ();
       repl game dict
 
-let rec one_loop (game : G.t) (dict : D.t) =
+let rec one_loop (game : Game.t) (dict : D.t) =
   match Raylib.window_should_close () with
   | true -> Raylib.close_window ()
   | false ->
@@ -143,7 +152,7 @@ let rec intro_loop () =
         let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
         let dict = D.of_list dict_lst in
         let game =
-          G.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
+          Game.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
         in
         one_loop game dict
       else intro_loop ()

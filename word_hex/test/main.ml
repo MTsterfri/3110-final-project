@@ -14,25 +14,26 @@ let make_test (name : string) actual expected =
 module D = TrieDictionary.Make
 module DList = ListDictionary.Make
 
-let trie_dict = D.of_list [ "abcdefg"; "hi"; "hello"; "fg" ]
-let list_dict = DList.of_list [ "abcdefg"; "hi"; "hello" ]
+let alphabet_dict = D.of_list [ "abcdefg"; "hi"; "hello"; "fg" ]
+let alphabet_dict_no_pangram = D.of_list [ "abcde"; "hi"; "hello"; "fg"; "abb" ]
 
-let board =
+let alphabet_board =
   MultiBoard.board_of_letters
     (Option.get (MultiBoard.shape_of_string "Hex"))
     [ 'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G' ]
+
+let alphabet_game =
+  Game.build_of_board None
+    (Option.get (MultiBoard.shape_of_string "Hex"))
+    alphabet_dict alphabet_board
+
+let highest_score_dict =
+  D.of_list [ "conflict"; "cliff"; "fill"; "fiction"; "inn" ]
 
 let highest_score_board =
   MultiBoard.board_of_letters
     (Option.get (MultiBoard.shape_of_string "Hex"))
     [ 'I'; 'L'; 'O'; 'F'; 'T'; 'N'; 'C' ]
-
-let highest_score_dict = D.of_list [ "conflict"; "cliff"; "fiction"; "inn" ]
-
-let game =
-  Game.build_of_board None
-    (Option.get (MultiBoard.shape_of_string "Hex"))
-    trie_dict board
 
 let highest_score_game =
   Game.build_of_board None
@@ -41,24 +42,29 @@ let highest_score_game =
 
 let game_tests =
   [
-    make_test "game contains pangram"
-      (Game.contains_pangram trie_dict board)
+    make_test "contains_pangram(); game contains pangram"
+      (Game.contains_pangram alphabet_dict alphabet_board)
       true;
-    make_test "all_filtered_words_game()"
-      (DList.to_list (Game.all_filtered_words_game game))
+    make_test "contains_pangram(); game doesn't contain pangram"
+      (Game.contains_pangram alphabet_dict_no_pangram alphabet_board)
+      false;
+    make_test
+      "all_filtered_words_game(); only includes words with the center letter \
+       and contain at least four letters"
+      (DList.to_list
+         (Game.all_filtered_words_board alphabet_dict alphabet_board))
       [ "abcdefg" ];
-    make_test "highest_possible_score()"
+    make_test "get_highest_possible_score(); includes a pangram"
       (Game.get_highest_possible_score highest_score_game)
-      27;
-    make_test "score_calc_game(), pangram"
-      (Game.score_calc_game "conflict" highest_score_game)
+      28;
+    make_test "score_calc_board(); score of the pangram"
+      (Game.score_calc_board "conflict" highest_score_board)
       15;
-    make_test "score_calc_game(), five-letters"
-      (Game.score_calc_game "cliff" highest_score_game)
-      5;
-    make_test "score_calc_game(), seven-letters"
-      (Game.score_calc_game "fiction" highest_score_game)
-      7;
+    make_test
+      "calculate_rank_str(); testing truncation with score and rank \
+       calculations"
+      (Game.calculate_rank_str 4 28)
+      "Solid";
   ]
 
 (*****************************************************************)
@@ -212,7 +218,4 @@ let suite =
   >::: List.flatten
          [ game_tests; board_tests; ListDictTests.tests; TrieDictTests.tests ]
 
-let () =
-  print_string
-    (string_of_int (Game.get_highest_possible_score highest_score_game));
-  run_test_tt_main suite
+let () = run_test_tt_main suite
