@@ -18,7 +18,11 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
         \ #reset - resets the current game";
       print_newline ();
       g
-  | "#new" -> G.build None (choose_shape ()) dict
+  | "#new" ->
+      if not (G.contains_pangram dict (G.get_board g)) then (
+        print_endline "Please note that this board does not contain a pangram.";
+        print_newline ());
+      G.build None (choose_shape ()) dict
   | "#found" ->
       print_newline ();
       print_endline "Words Found So Far:";
@@ -69,13 +73,19 @@ let () =
   Random.self_init ();
   print_endline "\n\nWelcome to Word Hex!\n";
   let shape = choose_shape () in
+  print_newline ();
   print_endline
     "How to play: Type any word you can construct from what is given.\n";
   print_endline "Press enter to continue";
   let _ = read_line () in
   print_endline "Please wait while the game is set up...\n";
+  print_newline ();
   let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
   (*TODO: UPDATE DICT_LST*)
   let dict = D.of_list dict_lst in
   let game = G.build None shape dict in
+  if not (G.contains_pangram dict (G.get_board game)) then (
+    print_endline "Please note that this board does not contain a pangram.";
+    print_newline ())
+  else ();
   repl game dict

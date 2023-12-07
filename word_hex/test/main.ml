@@ -1,11 +1,44 @@
 open OUnit2
 open Word_hex
+open Board
+open Multi
+open Game
 
 (*****************************************************************)
 (* Game Tests *)
 (*****************************************************************)
 
-let game_tests = []
+let make_test (name : string) actual expected =
+  name >:: fun _ -> assert_equal actual expected
+
+module D = TrieDictionary.Make
+module DList = ListDictionary.Make
+
+let trie_dict = D.of_list [ "abcdefg"; "hi"; "hello"; "fg" ]
+let list_dict = DList.of_list [ "abcdefg"; "hi"; "hello" ]
+
+let board =
+  MultiBoard.board_of_letters
+    (Option.get (MultiBoard.shape_of_string "Hex"))
+    [ 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g' ]
+
+let game =
+  Game.build_of_board None
+    (Option.get (MultiBoard.shape_of_string "Hex"))
+    trie_dict board
+
+let game_tests =
+  [
+    make_test "game contains pangram"
+      (Game.contains_pangram trie_dict board)
+      true;
+    make_test "all_filtered_words_game"
+      (DList.to_list (Game.all_filtered_words_game game))
+      [ "abcdefg" ];
+    make_test "MultiBoard.is_pangram"
+      (MultiBoard.is_pangram "abcdefg" board)
+      true;
+  ]
 
 (*****************************************************************)
 (* Board Tess *)

@@ -20,10 +20,23 @@ module type GameType = sig
     | Beginner of float
 
   val build : string list option -> MultiBoard.shape -> D.t -> t
+
+  val build_of_board :
+    string list option -> MultiBoard.shape -> D.t -> MultiBoard.t -> t
+
+  val get_board : t -> MultiBoard.t
+  val get_dict : t -> D.t
   val update : t -> string -> t
   val found : t -> string list
   val shuffle : t -> t
   val reset : t -> t
+
+  val best_board :
+    int -> MultiBoard.shape -> string list option -> D.t -> MultiBoard.t
+
+  val contains_pangram : D.t -> MultiBoard.t -> bool
+  val all_filtered_words_game : t -> DList.t
+  val all_words : t -> string list
   val print : t -> unit
 end
 
@@ -52,7 +65,7 @@ module Game : GameType = struct
 
   let rec build (words : string list option) (shape : MultiBoard.shape)
       (dict : D.t) : t =
-    let chosen_board = MultiBoard.build shape words in
+    let chosen_board = best_board 1000 shape None dict in
     let hs = highest_possible_board_score chosen_board dict in
     {
       score = 0;
@@ -63,6 +76,22 @@ module Game : GameType = struct
       message = "";
       highest_possible_score = hs;
     }
+
+  and build_of_board (words : string list option) (shape : MultiBoard.shape)
+      (dict : D.t) (board : MultiBoard.t) : t =
+    let hs = highest_possible_board_score board dict in
+    {
+      score = 0;
+      rank = Beginner 0.0;
+      found_words = [];
+      board;
+      dictionary = dict;
+      message = "";
+      highest_possible_score = hs;
+    }
+
+  and get_board (game : t) : MultiBoard.t = game.board
+  and get_dict (game : t) : D.t = game.dictionary
 
   and calculate_ranks (game : t) : rank list =
     let hs = float_of_int game.highest_possible_score in
@@ -167,6 +196,24 @@ module Game : GameType = struct
     in
     DList.of_list words_lst
 
+  and list_of_char_lists (game : t) : char list list =
+    let board_data = MultiBoard.board_data game.board in
+    List.fold_left
+      (fun acc elem ->
+        let center, letters = elem in
+        let char_lst = center :: letters in
+        char_lst :: acc)
+      [] board_data
+
+  and all_words (game : t) : string list =
+    let char_lst = list_of_char_lists game in
+    let list_of_lists =
+      List.fold_left
+        (fun acc elem -> D.of_char_list elem game.dictionary :: acc)
+        [] char_lst
+    in
+    List.flatten list_of_lists
+
   and highest_possible_board_score (board : MultiBoard.t) (dict : D.t) : int =
     let words = DList.to_list (all_filtered_words_board dict board) in
     List.fold_left (fun acc word -> acc + score_calc_board word board) 0 words
@@ -190,6 +237,8 @@ module Game : GameType = struct
 
   and contains_pangram (dict : D.t) (board : MultiBoard.t) : bool =
     let words = DList.to_list (all_filtered_words_board dict board) in
+    print_string (List.fold_left ( ^ ) "" words);
+    print_string (string_of_bool (MultiBoard.is_pangram "abcdefg" board));
     List.exists (fun word -> MultiBoard.is_pangram word board) words
 
   and good_boards_list : MultiBoard.t list ref = ref []
@@ -207,16 +256,16 @@ module Game : GameType = struct
           find_best_board (x - 1) shape dict custom_words
 
   and best_board (count : int) (shape : MultiBoard.shape)
-      (custom_words : string list option) (game : t) : MultiBoard.t =
-    match find_best_board count shape game.dictionary custom_words with
+      (custom_words : string list option) (dict : D.t) : MultiBoard.t =
+    match find_best_board count shape dict custom_words with
     | Some board -> board
     | None ->
         let good_boards = !good_boards_list in
         List.fold_left
           (fun best_board_result elem ->
             if
-              highest_possible_board_score elem game.dictionary
-              > highest_possible_board_score best_board_result game.dictionary
+              highest_possible_board_score elem dict
+              > highest_possible_board_score best_board_result dict
             then elem
             else best_board_result)
           (List.hd good_boards) good_boards
