@@ -57,7 +57,8 @@ let common_consonant_list =
     (13, 'N');
     (15, 'P');
     (17, 'R');
-    (18, 'S');
+    (* (18, 'S');  *)
+    (* Actual Spelling Bee Doesn't include 'S'*)
     (19, 'T');
   ]
 
@@ -617,10 +618,238 @@ end
 (*******************************************************)
 (***************** FLOWER BOARD MODULE ********************)
 
-(* module FlowerBoard : BoardType = struct type t = hex
+module FlowerBoard : BoardType = struct
+  type t = {
+    top : hex;
+    down : hex;
+    side : hex;
+    center : hex;
+  }
 
-   let build = failwith "Unimplemented" let contains = failwith "Unimplemented"
-   let is_pangram = failwith "Unimplemented" let shuffle = failwith
-   "Unimplemented" let print = failwith "Unimplemented" let get_letters =
-   failwith "Unimplemented" let board_of_letters = failwith "Unimplemented" let
-   board_data = failwith "Unimplemented" end *)
+  let build input =
+    ignore input;
+    let lst =
+      [
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+        'A';
+      ]
+    in
+    {
+      top =
+        {
+          center = List.nth lst 0;
+          h0 = List.nth lst 1;
+          h1 = List.nth lst 2;
+          h2 = List.nth lst 3;
+          h3 = List.nth lst 4;
+          h4 = List.nth lst 5;
+          h5 = List.nth lst 6;
+        };
+      down =
+        {
+          center = List.nth lst 7;
+          h0 = List.nth lst 8;
+          h1 = List.nth lst 9;
+          h2 = List.nth lst 10;
+          h3 = List.nth lst 11;
+          h4 = List.nth lst 12;
+          h5 = List.nth lst 13;
+        };
+      side =
+        {
+          center = List.nth lst 14;
+          h0 = List.nth lst 15;
+          h1 = List.nth lst 16;
+          h2 = List.nth lst 17;
+          h3 = List.nth lst 18;
+          h4 = List.nth lst 19;
+          h5 = List.nth lst 20;
+        };
+      center =
+        {
+          center = List.nth lst 21;
+          h0 = List.nth lst 22;
+          h1 = List.nth lst 23;
+          h2 = List.nth lst 24;
+          h3 = List.nth lst 25;
+          h4 = List.nth lst 26;
+          h5 = List.nth lst 27;
+        };
+    }
+
+  let contains (word : string)
+      ({ top = th; down = dh; side = sh; center = ch } : t) : bool =
+    let word_upper = String.uppercase_ascii word in
+    String.length word >= 4
+    && (hex_contains th word_upper || hex_contains dh word_upper
+      || hex_contains sh word_upper || hex_contains ch word_upper)
+
+  let is_pangram (word : string)
+      ({ top = th; down = dh; side = sh; center = ch } : t) : bool =
+    let word_upper = String.uppercase_ascii word in
+    hex_is_pangram th word_upper
+    || hex_is_pangram dh word_upper
+    || hex_is_pangram sh word_upper
+    || hex_is_pangram ch word_upper
+
+  let shuffle b = b
+
+  let string_of_board ({ top = th; down = dh; side = sh; center = ch } : t) :
+      string =
+    let short = "     " in
+    let med = "         " in
+    let long = med ^ " " in
+    short ^ String.make 1 th.h0 ^ "\n" ^ String.make 1 th.h5 ^ med
+    ^ String.make 1 th.h1 ^ "\n" ^ short ^ String.make 1 th.center ^ "\n"
+    ^ String.make 1 th.h4 ^ med ^ String.make 1 th.h2 ^ med
+    ^ String.make 1 sh.h0 ^ "\n" ^ short ^ String.make 1 th.h3 ^ med
+    ^ String.make 1 sh.h5 ^ med ^ String.make 1 sh.h1 ^ "\n" ^ long
+    ^ String.make 1 ch.center ^ med ^ String.make 1 sh.center ^ "\n" ^ short
+    ^ String.make 1 dh.h0 ^ med ^ String.make 1 sh.h4 ^ med
+    ^ String.make 1 sh.h2 ^ "\n" ^ String.make 1 dh.h5 ^ med
+    ^ String.make 1 dh.h1 ^ med ^ String.make 1 sh.h3 ^ "\n" ^ short
+    ^ String.make 1 dh.center ^ "\n" ^ String.make 1 dh.h4 ^ med
+    ^ String.make 1 dh.h2 ^ "\n" ^ short ^ String.make 1 dh.h3
+
+  let print b = print_string (string_of_board b)
+
+  let get_letters ({ top = th; down = dh; side = sh; center = ch } : t) :
+      char list =
+    [
+      th.center;
+      th.h0;
+      th.h1;
+      th.h2;
+      th.h3;
+      th.h4;
+      th.h5;
+      dh.center;
+      dh.h0;
+      dh.h1;
+      dh.h2;
+      dh.h3;
+      dh.h4;
+      dh.h5;
+      sh.center;
+      sh.h0;
+      sh.h1;
+      sh.h2;
+      sh.h3;
+      sh.h4;
+      sh.h5;
+      ch.center;
+      ch.h0;
+      ch.h1;
+      ch.h2;
+      ch.h3;
+      ch.h4;
+      ch.h5;
+    ]
+
+  let board_of_letters (lst : char list) : t =
+    assert (List.length lst = 28);
+    {
+      top =
+        {
+          center = List.nth lst 0;
+          h0 = List.nth lst 1;
+          h1 = List.nth lst 2;
+          h2 = List.nth lst 3;
+          h3 = List.nth lst 4;
+          h4 = List.nth lst 5;
+          h5 = List.nth lst 6;
+        };
+      down =
+        {
+          center = List.nth lst 7;
+          h0 = List.nth lst 8;
+          h1 = List.nth lst 9;
+          h2 = List.nth lst 10;
+          h3 = List.nth lst 11;
+          h4 = List.nth lst 12;
+          h5 = List.nth lst 13;
+        };
+      side =
+        {
+          center = List.nth lst 14;
+          h0 = List.nth lst 15;
+          h1 = List.nth lst 16;
+          h2 = List.nth lst 17;
+          h3 = List.nth lst 18;
+          h4 = List.nth lst 19;
+          h5 = List.nth lst 20;
+        };
+      center =
+        {
+          center = List.nth lst 21;
+          h0 = List.nth lst 22;
+          h1 = List.nth lst 23;
+          h2 = List.nth lst 24;
+          h3 = List.nth lst 25;
+          h4 = List.nth lst 26;
+          h5 = List.nth lst 27;
+        };
+    }
+
+  let board_data ({ top = th; down = dh; side = sh; center = ch } : t) :
+      (char * char list) list =
+    [
+      (th.center, [ th.h0; th.h1; th.h2; th.h3; th.h4; th.h5 ]);
+      (dh.center, [ dh.h0; dh.h1; dh.h2; dh.h3; dh.h4; dh.h5 ]);
+      (sh.center, [ sh.h0; sh.h1; sh.h2; sh.h3; sh.h4; sh.h5 ]);
+      (ch.center, [ ch.h0; ch.h1; ch.h2; ch.h3; ch.h4; ch.h5 ]);
+    ]
+end
+
+module HoneyComb = struct
+  type t = hex * hex * hex * hex * hex * hex
+
+  let build input = failwith "Unimplemented"
+
+  let contains (word : string) ((b1, b2, b3, b4, b5, b6) : t) : bool =
+    failwith "Unimplemented"
+
+  let is_pangram (word : string) ((b1, b2, b3, b4, b5, b6) : t) : bool =
+    failwith "Unimplemented"
+
+  let shuffle b = b
+
+  let string_of_board ((b1, b2, b3, b4, b5, b6) : t) : string =
+    failwith "Unimplemented"
+
+  let print b = print_string (string_of_board b)
+
+  let get_letters ((b1, b2, b3, b4, b5, b6) : t) : char list =
+    failwith "Unimplemented"
+
+  let board_of_letters (lst : char list) : t = failwith "Unimplemented"
+
+  let board_data ((b1, b2, b3, b4, b5, b6) : t) : (char * char list) list =
+    failwith "Unimplemented"
+end

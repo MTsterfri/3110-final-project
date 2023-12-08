@@ -70,7 +70,8 @@ and choose_shape () : MultiBoard.shape =
     \ \n\
     \   - Hex \n\
     \   - TwoHex \n\
-    \   - Triple";
+    \   - Triple\n\
+    \   - Flower";
   print_newline ();
   print_string "Board shape: ";
   let input = read_line () in

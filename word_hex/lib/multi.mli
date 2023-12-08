@@ -9,11 +9,11 @@ module type MultiType = sig
   val shape_of_string : string -> shape option
   (** Returns Some shape corresponding to the given string. If the string does
       not correspond to any shape, returns None. Valid strings are "Hex",
-      "TwoHex", and "Triple"*)
+      "TwoHex", "Triple", and Flower*)
 
   val string_of_shape : shape -> string
   (** Returns the string corresponding to the given shape. Possible strings are
-      "Hex", "TwoHex", and "Triple"*)
+      "Hex", "TwoHex", "Triple", and "Flower"*)
 
   val shape_of_board : t -> shape
   (** Returns the shape of the given board.*)
