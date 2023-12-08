@@ -21,12 +21,22 @@ git-repo: "https://github.coecis.cornell.edu/smc453/3110-final-project"
 demo-video-url: ""
 # Write a short, attention-grabbing description of your project.
 desc: >
-  Our project is inspired by The New York Times Spelling Bee. It gives the player
-  a game board of seven letters (displayed as a hexagon with six letters on each 
-  corner and one in the center). The player should attempt to produce as many
-  words as possible using the provided letters, but always using the center
-  letter. Letters may be repeated.
+  Our project is inspired by The New York Times Spelling Bee. The original game 
+  gives the player a board of seven letters (displayed as a hexagon with six 
+  letters on each corner and one in the center). The player should attempt to 
+  produce as many words as possible using the provided letters, but always 
+  using the center letter. Letters may be repeated.
 
-  The game is run out of terminal, where players can type words or game commands
-  starting with '#'. Points are based on the length of each word. The goal is to 
-  reach the highest score possible.
+  Our game implements this using both a gui and the terminal. The game is run in 
+  the gui at the beginning and you are given a choice of playing a base 
+  version of the original game in the gui or continuing in the command line with
+  additional features.
+
+  The command line version lets you play with new implementations of board
+  shapes, using multiple hexagons, as well as different functions which can be accessed
+  with "#help". Using multiple hexagons, a word can only be composed in one of
+  integrated hexagons.
+
+  In both implementations, players get one point for four letter words and one
+  point per letter for longer words. They are given a ranking throughout the
+  game based on the difficulty of the board they are on.
