@@ -21,11 +21,13 @@ let rec command (input : string) (g : Game.t) (dict : D.t) : Game.t =
       print_newline ();
       g
   | "#new" ->
-      if not (Game.contains_pangram dict (Game.get_board g)) then (
+      let new_game = Game.build None (choose_shape ()) dict in
+      if not (Game.contains_pangram dict (Game.get_board new_game)) then (
+        print_newline ();
         print_endline "Please note that this board does not contain a pangram.";
         print_newline ())
       else ();
-      Game.build None (choose_shape ()) dict
+      new_game
   | "#found" ->
       print_newline ();
       print_endline "Words Found So Far:";
