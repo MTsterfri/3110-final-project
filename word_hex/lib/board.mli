@@ -64,6 +64,7 @@ module FlowerBoard : BoardType
     surrounding the center hex, where two outer letters from each outer hex
     overlap with the outer letters of the center board. *)
 
-(* module HoneyComb : BoardType (** A Word Hex Board with six hexes (a hex is a
-   group of 7 letters arranged in a hexagon) arranged so that there is a grid of
-   overlaping hexes with 5 main columns of heights 4-5-4-5-4 *) *)
+module Honeycomb : BoardType
+(** A Word Hex Board with six hexes (a hex is a group of 7 letters arranged in a
+    hexagon) arranged so that there is a grid of overlaping hexes with 5 main
+    columns of heights 4-5-4-5-4 *)

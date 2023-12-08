@@ -827,29 +827,208 @@ module FlowerBoard : BoardType = struct
     ]
 end
 
-module HoneyComb = struct
+(*******************************************************)
+(***************** HONEY COMB MODULE ********************)
+
+module Honeycomb : BoardType = struct
   type t = hex * hex * hex * hex * hex * hex
 
-  let build input = failwith "Unimplemented"
+  let build input =
+    ignore input;
+    ( {
+        center = 'F';
+        h0 = 'E';
+        h1 = 'J';
+        h2 = 'K';
+        h3 = 'G';
+        h4 = 'B';
+        h5 = 'A';
+      },
+      {
+        center = 'H';
+        h0 = 'G';
+        h1 = 'L';
+        h2 = 'M';
+        h3 = 'I';
+        h4 = 'D';
+        h5 = 'C';
+      },
+      {
+        center = 'K';
+        h0 = 'J';
+        h1 = 'O';
+        h2 = 'P';
+        h3 = 'L';
+        h4 = 'G';
+        h5 = 'F';
+      },
+      {
+        center = 'L';
+        h0 = 'K';
+        h1 = 'P';
+        h2 = 'Q';
+        h3 = 'M';
+        h4 = 'H';
+        h5 = 'G';
+      },
+      {
+        center = 'O';
+        h0 = 'N';
+        h1 = 'S';
+        h2 = 'T';
+        h3 = 'P';
+        h4 = 'K';
+        h5 = 'J';
+      },
+      {
+        center = 'Q';
+        h0 = 'P';
+        h1 = 'U';
+        h2 = 'V';
+        h3 = 'R';
+        h4 = 'M';
+        h5 = 'L';
+      } )
 
   let contains (word : string) ((b1, b2, b3, b4, b5, b6) : t) : bool =
-    failwith "Unimplemented"
+    let word_upper = String.uppercase_ascii word in
+    String.length word >= 4
+    && (hex_contains b1 word_upper || hex_contains b2 word_upper
+      || hex_contains b3 word_upper || hex_contains b4 word_upper
+      || hex_contains b5 word_upper || hex_contains b6 word_upper)
 
   let is_pangram (word : string) ((b1, b2, b3, b4, b5, b6) : t) : bool =
-    failwith "Unimplemented"
+    let word_upper = String.uppercase_ascii word in
+    hex_is_pangram b1 word_upper
+    || hex_is_pangram b2 word_upper
+    || hex_is_pangram b3 word_upper
+    || hex_is_pangram b4 word_upper
+    || hex_is_pangram b5 word_upper
+    || hex_is_pangram b6 word_upper
 
   let shuffle b = b
 
   let string_of_board ((b1, b2, b3, b4, b5, b6) : t) : string =
-    failwith "Unimplemented"
+    let short = "     " in
+    let long = "         " in
+    short ^ String.make 1 b1.h0 ^ long ^ String.make 1 b5.h0 ^ "\n"
+    ^ String.make 1 b1.h5 ^ long ^ String.make 1 b1.h1 ^ long
+    ^ String.make 1 b5.h1 ^ "\n" ^ short ^ String.make 1 b1.center ^ long
+    ^ String.make 1 b3.h1 ^ "\n" ^ String.make 1 b1.h4 ^ long
+    ^ String.make 1 b1.h2 ^ long ^ String.make 1 b5.h2 ^ "\n" ^ short
+    ^ String.make 1 b1.h3 ^ long ^ String.make 1 b3.h2 ^ "\n"
+    ^ String.make 1 b2.h5 ^ long ^ String.make 1 b2.h1 ^ long
+    ^ String.make 1 b6.h1 ^ "\n" ^ short ^ String.make 1 b2.center ^ long
+    ^ String.make 1 b4.h2 ^ "\n" ^ String.make 1 b2.h4 ^ long
+    ^ String.make 1 b2.h2 ^ long ^ String.make 1 b6.h2 ^ "\n" ^ short
+    ^ String.make 1 b2.h3 ^ long ^ String.make 1 b6.h3 ^ "\n"
 
   let print b = print_string (string_of_board b)
 
   let get_letters ((b1, b2, b3, b4, b5, b6) : t) : char list =
-    failwith "Unimplemented"
+    [
+      b1.center;
+      b1.h1;
+      b1.h2;
+      b1.h3;
+      b1.h4;
+      b1.h5;
+      b2.center;
+      b2.h1;
+      b2.h2;
+      b2.h3;
+      b2.h4;
+      b2.h5;
+      b3.center;
+      b3.h1;
+      b3.h2;
+      b3.h3;
+      b3.h4;
+      b3.h5;
+      b4.center;
+      b4.h1;
+      b4.h2;
+      b4.h3;
+      b4.h4;
+      b4.h5;
+      b5.center;
+      b5.h1;
+      b5.h2;
+      b5.h3;
+      b5.h4;
+      b5.h5;
+      b6.center;
+      b6.h1;
+      b6.h2;
+      b6.h3;
+      b6.h4;
+      b6.h5;
+    ]
 
-  let board_of_letters (lst : char list) : t = failwith "Unimplemented"
+  let board_of_letters (lst : char list) : t =
+    assert (List.length lst = 42);
+    ( {
+        center = List.nth lst 0;
+        h0 = List.nth lst 1;
+        h1 = List.nth lst 2;
+        h2 = List.nth lst 3;
+        h3 = List.nth lst 4;
+        h4 = List.nth lst 5;
+        h5 = List.nth lst 6;
+      },
+      {
+        center = List.nth lst 7;
+        h0 = List.nth lst 8;
+        h1 = List.nth lst 9;
+        h2 = List.nth lst 10;
+        h3 = List.nth lst 11;
+        h4 = List.nth lst 12;
+        h5 = List.nth lst 13;
+      },
+      {
+        center = List.nth lst 14;
+        h0 = List.nth lst 15;
+        h1 = List.nth lst 16;
+        h2 = List.nth lst 17;
+        h3 = List.nth lst 18;
+        h4 = List.nth lst 19;
+        h5 = List.nth lst 20;
+      },
+      {
+        center = List.nth lst 21;
+        h0 = List.nth lst 22;
+        h1 = List.nth lst 23;
+        h2 = List.nth lst 24;
+        h3 = List.nth lst 25;
+        h4 = List.nth lst 26;
+        h5 = List.nth lst 27;
+      },
+      {
+        center = List.nth lst 28;
+        h0 = List.nth lst 29;
+        h1 = List.nth lst 30;
+        h2 = List.nth lst 31;
+        h3 = List.nth lst 32;
+        h4 = List.nth lst 33;
+        h5 = List.nth lst 34;
+      },
+      {
+        center = List.nth lst 35;
+        h0 = List.nth lst 36;
+        h1 = List.nth lst 37;
+        h2 = List.nth lst 38;
+        h3 = List.nth lst 39;
+        h4 = List.nth lst 40;
+        h5 = List.nth lst 41;
+      } )
 
   let board_data ((b1, b2, b3, b4, b5, b6) : t) : (char * char list) list =
-    failwith "Unimplemented"
+    [
+      (b1.center, [ b1.h0; b1.h1; b1.h2; b1.h3; b1.h4; b1.h5 ]);
+      (b2.center, [ b2.h0; b2.h1; b2.h2; b2.h3; b2.h4; b2.h5 ]);
+      (b3.center, [ b3.h0; b3.h1; b3.h2; b3.h3; b3.h4; b3.h5 ]);
+      (b4.center, [ b4.h0; b4.h1; b4.h2; b4.h3; b4.h4; b4.h5 ]);
+      (b5.center, [ b5.h0; b5.h1; b5.h2; b5.h3; b5.h4; b5.h5 ]);
+      (b6.center, [ b6.h0; b6.h1; b6.h2; b6.h3; b6.h4; b6.h5 ]);
+    ]
 end
