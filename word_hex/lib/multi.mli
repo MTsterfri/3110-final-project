@@ -1,6 +1,6 @@
 (** Module to manage different [BoardType] modules. *)
 
-(** The signature of the module that manages word_hex boards. *)
+(** The signature of the module that manages Word Hex boards. *)
 module type MultiType = sig
   type t
   (** Type representing the data in the board. *)
@@ -62,5 +62,6 @@ module type MultiType = sig
 end
 
 module MultiBoard : MultiType
-(** A Word Hex Board with only one hex (a hex is a group of 7 letters arranged
-    in a hexagon). *)
+(** A Word Hex board type that manages different [BoardType] modules.
+    Specifically, this module works with [HexBoard], [TwoHex], [TripleBoard],
+    [FlowerBoard], [HoneyComb] modules. *)
