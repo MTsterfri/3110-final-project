@@ -1,3 +1,5 @@
+(** Representation of a Word Hex game. *)
+
 open Board
 open Multi
 module D = TrieDictionary.Make

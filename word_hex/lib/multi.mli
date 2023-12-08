@@ -1,3 +1,5 @@
+(** Module to manage different [BoardType] modules. *)
+
 (** The signature of the module that manages word_hex boards. *)
 module type MultiType = sig
   type t

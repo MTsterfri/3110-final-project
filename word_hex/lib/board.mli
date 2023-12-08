@@ -1,3 +1,5 @@
+(** Representation of a Word Hex board. *)
+
 (** The signature of word_hex boards. *)
 module type BoardType = sig
   type t

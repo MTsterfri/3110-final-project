@@ -1,4 +1,4 @@
-(** Represent an dictionary of words *)
+(** Representation of a dictionary of words. *)
 
 (** A [Dictionary] of words. *)
 module type Dictionary = sig
