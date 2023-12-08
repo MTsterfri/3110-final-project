@@ -1,9 +1,13 @@
 open Board
 open Multi
-module D = TrieDictionary.Make
-module DList = ListDictionary.Make
 
-(** The signature of a word_hex game. *)
+module D = TrieDictionary.Make
+(** Module for dictionaries represented as tries. *)
+
+module DList = ListDictionary.Make
+(** Module for dictionaries represented as lists. *)
+
+(** The signature of a Word Hex game. *)
 module type GameType = sig
   type t
 
