@@ -93,7 +93,8 @@ let rec other_loop () =
       let game = G.build None shape dict in
       repl game dict
 
-let rec one_loop (game : G.t) (dict : D.t) =
+let rec one_loop (text_box : Raylib.Rectangle.t) text (game : G.t) (dict : D.t)
+    =
   match Raylib.window_should_close () with
   | true -> Raylib.close_window ()
   | false ->
@@ -101,9 +102,31 @@ let rec one_loop (game : G.t) (dict : D.t) =
       begin_drawing ();
       clear_background Color.raywhite;
       draw_text ("Score : " ^ string_of_int 0) 30 25 20 Color.darkgray;
+      draw_text ("Rank : " ^ "Beginner") 30 45 20 Color.darkgray;
       draw_text "Unimplemented One Hex" 280 200 20 Color.darkgray;
       end_drawing ();
-      one_loop game dict
+      one_loop text_box text game dict
+
+let setup_one_loop () =
+  match Raylib.window_should_close () with
+  | true -> Raylib.close_window ()
+  | false ->
+      let open Raylib in
+      begin_drawing ();
+      clear_background Color.raywhite;
+      draw_text "Please wait while game is set up..." 280 200 20 Color.darkgray;
+      end_drawing ();
+      let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
+      let dict = D.of_list dict_lst in
+      let game =
+        G.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
+      in
+      let text_box = Rectangle.create 0. 0. 0. 0. in
+      let text =
+        let text = Bytes.create 20 in
+        Bytes.fill text 0 20 '\000'
+      in
+      one_loop text_box text game dict
 
 (* completed up to here *)
 let rec intro_loop () =
@@ -131,13 +154,7 @@ let rec intro_loop () =
       let on_one = x >= 250. && x <= 350. && y >= 350. && y <= 400. in
       let on_other = x >= 450. && x <= 550. && y >= 350. && y <= 400. in
       if isDown && on_other then other_loop ()
-      else if isDown && on_one then
-        let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
-        let dict = D.of_list dict_lst in
-        let game =
-          G.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
-        in
-        one_loop game dict
+      else if isDown && on_one then setup_one_loop ()
       else intro_loop ()
 
 let () =
