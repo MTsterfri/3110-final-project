@@ -15,10 +15,17 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
         \ #new - starts a new game \n\
         \ #found - lists the words you have already found\n\
         \ #shuffle - shuffles the letters on the game board\n\
-        \ #reset - resets the current game";
+        \ #reset - resets the current game\n\
+        \ #rankings - shows the rankings and the minimum score required to \
+         earn each rank";
       print_newline ();
       g
-  | "#new" -> G.build None (choose_shape ()) dict
+  | "#new" ->
+      if not (G.contains_pangram dict (G.get_board g)) then (
+        print_endline "Please note that this board does not contain a pangram.";
+        print_newline ())
+      else ();
+      G.build None (choose_shape ()) dict
   | "#found" ->
       print_newline ();
       print_endline "Words Found So Far:";
@@ -32,6 +39,7 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
       g
   | "#shuffle" -> G.shuffle g
   | "#reset" -> G.reset g
+  | "#rankings" -> G.print_rankings g
   | _ ->
       print_endline "Not a Valid Command";
       print_newline ();
