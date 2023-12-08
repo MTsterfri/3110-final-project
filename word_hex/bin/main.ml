@@ -15,10 +15,17 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
         \ #new - starts a new game \n\
         \ #found - lists the words you have already found\n\
         \ #shuffle - shuffles the letters on the game board\n\
-        \ #reset - resets the current game";
+        \ #reset - resets the current game\n\
+        \ #rankings - shows the rankings and the minimum score required to \
+         earn each rank";
       print_newline ();
       g
-  | "#new" -> G.build None (choose_shape ()) dict
+  | "#new" ->
+      if not (G.contains_pangram dict (G.get_board g)) then (
+        print_endline "Please note that this board does not contain a pangram.";
+        print_newline ())
+      else ();
+      G.build None (choose_shape ()) dict
   | "#found" ->
       print_newline ();
       print_endline "Words Found So Far:";
@@ -32,6 +39,7 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
       g
   | "#shuffle" -> G.shuffle g
   | "#reset" -> G.reset g
+  | "#rankings" -> G.print_rankings g
   | _ ->
       print_endline "Not a Valid Command";
       print_newline ();
@@ -59,6 +67,7 @@ and choose_shape () : MultiBoard.shape =
     \   - TwoHex \n\
     \   - Triple";
   print_newline ();
+  print_string "Board shape: ";
   let input = read_line () in
   let shape_option = MultiBoard.shape_of_string input in
   match shape_option with
@@ -69,18 +78,81 @@ and choose_shape () : MultiBoard.shape =
       print_newline ();
       choose_shape ()
 
-(* Main Processing *)
+(* Beginning of GUI loops*)
+let setup () =
+  Raylib.set_config_flags [ Raylib.ConfigFlags.Window_undecorated ];
+  Raylib.init_window 800 450 "Word Hex";
+  Raylib.set_target_fps 60
+
+(* read-eval-print loop *)
+let rec other_loop () =
+  match Raylib.window_should_close () with
+  | true -> Raylib.close_window ()
+  | false ->
+      let open Raylib in
+      begin_drawing ();
+      clear_background Color.raywhite;
+      draw_text "See terminal to play game" 280 200 20 Color.darkgray;
+      end_drawing ();
+      (* command line*)
+      print_endline "\n\nWelcome to Word Hex!\n";
+      print_endline
+        "How to play: Construct words using a hexagon that must contain the \
+         center letter and has the option of the outer ones";
+      let shape = choose_shape () in
+      print_endline "Please wait while the game is set up...\n";
+      let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
+      let dict = D.of_list dict_lst in
+      let game = G.build None shape dict in
+      repl game dict
+
+let rec one_loop (game : G.t) (dict : D.t) =
+  match Raylib.window_should_close () with
+  | true -> Raylib.close_window ()
+  | false ->
+      let open Raylib in
+      begin_drawing ();
+      clear_background Color.raywhite;
+      draw_text ("Score : " ^ string_of_int 0) 30 25 20 Color.darkgray;
+      draw_text "Unimplemented One Hex" 280 200 20 Color.darkgray;
+      end_drawing ();
+      one_loop game dict
+
+(* completed up to here *)
+let rec intro_loop () =
+  match Raylib.window_should_close () with
+  | true -> Raylib.close_window ()
+  | false ->
+      let open Raylib in
+      begin_drawing ();
+      clear_background Color.raywhite;
+      draw_text "\n\nWelcome to Word Hex!\n" 300 40 20 Color.darkgray;
+      draw_text
+        "How to play: Construct words using a hexagon that must contain\n\
+        \      the center letter and has the option of the outer ones" 75 190 20
+        Color.darkgray;
+      draw_text "Select a board shape to begin" 250 290 20 Color.darkgray;
+      draw_rectangle 250 350 100 50 Color.blue;
+      draw_rectangle 450 350 100 50 Color.blue;
+      draw_text "One Hex" 265 370 18 Color.white;
+      draw_text "Other \nShape" 470 355 18 Color.white;
+      end_drawing ();
+      let mousePos = get_mouse_position () in
+      let x = Vector2.x mousePos in
+      let y = Vector2.y mousePos in
+      let isDown = is_mouse_button_pressed MouseButton.Left in
+      let on_one = x >= 250. && x <= 350. && y >= 350. && y <= 400. in
+      let on_other = x >= 450. && x <= 550. && y >= 350. && y <= 400. in
+      if isDown && on_other then other_loop ()
+      else if isDown && on_one then
+        let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
+        let dict = D.of_list dict_lst in
+        let game =
+          G.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
+        in
+        one_loop game dict
+      else intro_loop ()
+
 let () =
   Random.self_init ();
-  print_endline "\n\nWelcome to Word Hex!\n";
-  let shape = choose_shape () in
-  print_endline
-    "How to play: Type any word you can construct from what is given.\n";
-  print_endline "Press enter to continue";
-  let _ = read_line () in
-  print_endline "Please wait while the game is set up...\n";
-  let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
-  (*TODO: UPDATE DICT_LST*)
-  let dict = D.of_list dict_lst in
-  let game = G.build None shape dict in
-  repl game dict
+  setup () |> intro_loop
