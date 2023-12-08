@@ -208,7 +208,9 @@ let rec command (input : string) (g : Game.t) (dict : D.t) : Game.t =
       print_endline
         "The list of commands are \n\
         \ #help - shows list of commands \n\
-        \ #new - starts a new game \n\
+        \ #new - starts a new game;\n\
+        \     enter the Game Name and Player Name of a previously #saved game \
+         to reload the game \n\
         \ #found - lists the words you have already found\n\
         \ #shuffle - shuffles the letters on the game board\n\
         \ #reset - resets the current game\n\
