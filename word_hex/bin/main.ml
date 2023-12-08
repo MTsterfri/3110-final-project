@@ -4,6 +4,201 @@ open Multi
 open Game
 module D = TrieDictionary.Make
 
+(* Scoreboard *)
+
+let rec choose_shape () : MultiBoard.shape =
+  print_string
+    "Choose a shape for your game board: \n\
+    \ \n\
+    \   - Hex \n\
+    \   - TwoHex \n\
+    \   - Triple";
+  print_newline ();
+  print_string "Board shape: ";
+  let input = read_line () in
+  let shape_option = MultiBoard.shape_of_string input in
+  match shape_option with
+  | Some shape -> shape
+  | None ->
+      print_newline ();
+      print_string "Not a valid board shape. Please choose again!";
+      print_newline ();
+      choose_shape ()
+
+let update (game_name : string) (player : string) (shape : string)
+    (char_list : string) (score : int) (rank : string) (found_words : string)
+    (hps : int) (scoreboard : (string * Yojson.Basic.t) list) :
+    (string * Yojson.Basic.t) list =
+  let assoc_lst (str : string) =
+    `Assoc
+      [
+        ("shape", `String shape);
+        ("char_list", `String char_list);
+        ("score", `Int score);
+        ("rank", `String rank);
+        ("found_words", `String str);
+        ("hps", `Int hps);
+      ]
+  in
+  match List.assoc_opt game_name scoreboard with
+  | Some g -> (
+      let removed_game_lst = List.remove_assoc game_name scoreboard in
+      match g with
+      | `Assoc lst -> (
+          match List.assoc_opt player lst with
+          | Some p ->
+              let old_found_words =
+                match p with
+                | `Assoc p_lst -> List.assoc "found_words" p_lst
+                | _ -> failwith "Must be `Assoc"
+              in
+
+              let old_found_words_str =
+                match old_found_words with
+                | `String str -> str
+                | _ -> failwith "Must be `String"
+              in
+              let combined_lst =
+                String.split_on_char ' ' (old_found_words_str ^ found_words)
+              in
+              let no_dup_lst = DList.to_list (DList.of_list combined_lst) in
+              let no_dup_str =
+                String.uppercase_ascii
+                  (List.fold_left
+                     (fun acc elem -> elem ^ " " ^ acc)
+                     "" no_dup_lst)
+              in
+              let remove_lst = List.remove_assoc player lst in
+              (game_name, `Assoc ((player, assoc_lst no_dup_str) :: remove_lst))
+              :: removed_game_lst
+          | None ->
+              (game_name, `Assoc ((player, assoc_lst found_words) :: lst))
+              :: removed_game_lst)
+      | _ -> failwith "Must be an `Assoc")
+  | None ->
+      (game_name, `Assoc [ (player, assoc_lst found_words) ]) :: scoreboard
+
+let scoreboard = ref []
+let game_name = ref ""
+
+let player_name = ref ""
+
+and make_json (data : Game.data) (game : string) (player : string) :
+    Yojson.Basic.t =
+  `Assoc
+    [
+      ( game,
+        `Assoc
+          [
+            ( player,
+              `Assoc
+                [
+                  ("shape", `String data.shape);
+                  ("char_list", `String data.char_list);
+                  ("score", `Int data.score);
+                  ("rank", `String data.rank);
+                  ("found_words", `String data.found_words);
+                  ("hps", `Int data.highest_possible_score);
+                ] );
+          ] );
+    ]
+
+and save_json (sb : Yojson.Basic.t) (file : string) =
+  let o = open_out file in
+  let str = Yojson.Basic.pretty_to_string sb in
+  output_string o str;
+  close_out o
+
+let set_scoreboard (file : string) : unit =
+  let o = open_in file in
+  match Yojson.Basic.from_channel o with
+  | `Assoc json -> scoreboard := json
+  | _ -> failwith "Must be an `Assoc"
+
+let update_scoreboard (file : string) =
+  let o = open_in file in
+  (match Yojson.Basic.from_channel o with
+  | `Assoc json -> scoreboard := json
+  | _ -> failwith "Must be an `Assoc");
+  close_in o
+
+let get_build_board_data_player_match (game_name : string)
+    (player_name : string) (custom_words : string list option) (dict : D.t)
+    (p_lst : (string * Yojson.Basic.t) list) : Game.data =
+  match List.assoc "shape" p_lst with
+  | `String sh -> (
+      match List.assoc "char_list" p_lst with
+      | `String cl -> (
+          match List.assoc "score" p_lst with
+          | `Int sc -> (
+              match List.assoc "rank" p_lst with
+              | `String r -> (
+                  match List.assoc "found_words" p_lst with
+                  | `String fw -> (
+                      match List.assoc "hps" p_lst with
+                      | `Int hps ->
+                          {
+                            shape = sh;
+                            char_list = cl;
+                            score = sc;
+                            rank = r;
+                            found_words = fw;
+                            highest_possible_score = hps;
+                          }
+                      | _ -> failwith "Must be `String")
+                  | _ -> failwith "Must be `String")
+              | _ -> failwith "Must be `String")
+          | _ -> failwith "Must be `Int")
+      | _ -> failwith "Must be `String")
+  | _ -> failwith "Must be `String"
+
+let get_build_board_data_game_match (game_name : string)
+    (custom_words : string list option) (dict : D.t)
+    (lst : (string * Yojson.Basic.t) list) : Game.data =
+  let player, stats = List.hd lst in
+  match stats with
+  | `Assoc stats_lst -> (
+      match List.assoc "shape" stats_lst with
+      | `String sh -> (
+          match List.assoc "char_list" stats_lst with
+          | `String cl -> (
+              match List.assoc "hps" stats_lst with
+              | `Int hps ->
+                  {
+                    shape = sh;
+                    char_list = cl;
+                    score = 0;
+                    rank = "Beginner";
+                    found_words = "";
+                    highest_possible_score = hps;
+                  }
+              | _ -> failwith "Must be `String")
+          | _ -> failwith "Must be `String")
+      | _ -> failwith "Must be `String")
+  | _ -> failwith "Must be `Assoc"
+
+let build_board (game_name : string) (player_name : string)
+    (custom_words : string list option) (dict : D.t) : Game.t =
+  match List.assoc_opt game_name !scoreboard with
+  | Some g -> (
+      match g with
+      | `Assoc lst -> (
+          match List.assoc_opt player_name lst with
+          | Some p -> (
+              match p with
+              | `Assoc p_lst ->
+                  Game.build_of_data
+                    (get_build_board_data_player_match game_name player_name
+                       custom_words dict p_lst)
+                    dict
+              | _ -> failwith "Must be a `Assoc")
+          | None ->
+              Game.build_of_data
+                (get_build_board_data_game_match game_name custom_words dict lst)
+                dict)
+      | _ -> failwith "Must be an `Assoc")
+  | None -> Game.build None (choose_shape ()) dict
+
 let rec command (input : string) (g : Game.t) (dict : D.t) : Game.t =
   match input with
   | "#help" ->
@@ -17,11 +212,15 @@ let rec command (input : string) (g : Game.t) (dict : D.t) : Game.t =
         \ #reset - resets the current game\n\
         \ #rankings - shows the rankings and the minimum score required to \
          earn each rank\n\
-        \ #solution - shows the list of all possible words";
+        \ #solution - shows the list of all possible words\n\
+        \ #save - saves player data for the game\n\
+        \ #quit - exit the game";
       print_newline ();
       g
   | "#new" ->
-      let new_game = Game.build None (choose_shape ()) dict in
+      get_game_name ();
+      get_player_name ();
+      let new_game = build_board !game_name !player_name None dict in
       if not (Game.contains_pangram dict (Game.get_board new_game)) then (
         print_newline ();
         print_endline "Please note that this board does not contain a pangram.";
@@ -47,6 +246,17 @@ let rec command (input : string) (g : Game.t) (dict : D.t) : Game.t =
       print_string (Game.all_filtered_words_game_str g);
       print_newline ();
       g
+  | "#save" ->
+      set_scoreboard "data/scoreboard.json";
+      let data = Game.get_game_data g in
+      save_json
+        (`Assoc
+          (update !game_name !player_name data.shape data.char_list data.score
+             data.rank data.found_words data.highest_possible_score !scoreboard))
+        "data/scoreboard.json";
+
+      update_scoreboard "data/scoreboard.json";
+      g
   | _ ->
       print_endline "Not a Valid Command";
       print_newline ();
@@ -57,33 +267,28 @@ and repl (game : Game.t) (dict : D.t) : unit =
   Game.print game;
   print_string "Type a word: ";
   let input = read_line () in
-  if String.length input > 0 && input.[0] = '#' then
+  if input = "#quit" then print_endline "Thanks for playing!"
+  else if String.length input > 0 && input.[0] = '#' then
     repl (command input game dict) dict
   else
     match input with
-    | "" -> print_endline "bye"
+    | "" -> repl game dict
     | _ ->
         print_newline ();
         repl (Game.update game input) dict
 
-and choose_shape () : MultiBoard.shape =
-  print_string
-    "Choose a shape for your game board: \n\
-    \ \n\
-    \   - Hex \n\
-    \   - TwoHex \n\
-    \   - Triple";
+and get_game_name () : unit =
   print_newline ();
-  print_string "Board shape: ";
+  print_string "Enter a name for your game: ";
   let input = read_line () in
-  let shape_option = MultiBoard.shape_of_string input in
-  match shape_option with
-  | Some shape -> shape
-  | None ->
-      print_newline ();
-      print_string "Not a valid board shape. Please choose again!";
-      print_newline ();
-      choose_shape ()
+  game_name := input
+
+and get_player_name () : unit =
+  print_newline ();
+  print_string "Enter your player name: ";
+  let input = read_line () in
+  player_name := input;
+  print_newline ()
 
 (* Beginning of GUI loops*)
 let setup () =
@@ -106,11 +311,13 @@ let rec other_loop () =
       print_endline
         "How to play: Construct words using a hexagon that must contain the \
          center letter and has the option of the outer ones";
-      let shape = choose_shape () in
+      get_game_name ();
+      get_player_name ();
       print_endline "Please wait while the game is set up...\n";
       let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
       let dict = D.of_list dict_lst in
-      let game = Game.build None shape dict in
+      set_scoreboard "data/scoreboard.json";
+      let game = build_board !game_name !player_name None dict in
       if not (Game.contains_pangram dict (Game.get_board game)) then (
         print_endline "Please note that this board does not contain a pangram.";
         print_newline ())

@@ -19,11 +19,22 @@ module type GameType = sig
     | GoodStart of int
     | Beginner of int
 
+  type data = {
+    shape : string;
+    char_list : string;
+    score : int;
+    rank : string;
+    found_words : string;
+    highest_possible_score : int;
+  }
+
   val build : string list option -> MultiBoard.shape -> D.t -> t
 
   val build_of_board :
     string list option -> MultiBoard.shape -> D.t -> MultiBoard.t -> t
 
+  val build_of_data : data -> D.t -> t
+  val get_game_data : t -> data
   val get_board : t -> MultiBoard.t
   val get_dict : t -> D.t
   val get_score : t -> int
@@ -69,6 +80,15 @@ module Game : GameType = struct
     highest_possible_score : int;
   }
 
+  type data = {
+    shape : string;
+    char_list : string;
+    score : int;
+    rank : string;
+    found_words : string;
+    highest_possible_score : int;
+  }
+
   let rec build (words : string list option) (shape : MultiBoard.shape)
       (dict : D.t) : t =
     let chosen_board = best_board 500 shape None dict in
@@ -94,6 +114,37 @@ module Game : GameType = struct
       dictionary = dict;
       message = "";
       highest_possible_score = hs;
+    }
+
+  and build_of_data (data : data) (dict : D.t) : t =
+    let str_lst = String.split_on_char ' ' (String.trim data.char_list) in
+    let char_lst = List.map (fun elem -> String.get elem 0) str_lst in
+    {
+      score = data.score;
+      rank = string_to_rank data.rank data.highest_possible_score;
+      found_words = String.split_on_char ' ' data.found_words;
+      board =
+        MultiBoard.board_of_letters
+          (Option.get (MultiBoard.shape_of_string data.shape))
+          char_lst;
+      dictionary = dict;
+      message = "";
+      highest_possible_score = data.highest_possible_score;
+    }
+
+  and get_game_data (game : t) : data =
+    {
+      shape = MultiBoard.string_of_shape (MultiBoard.shape_of_board game.board);
+      char_list =
+        List.fold_left
+          (fun acc elem -> String.make 1 elem ^ " " ^ acc)
+          ""
+          (MultiBoard.get_letters game.board);
+      score = game.score;
+      rank = rank_to_string game.rank;
+      found_words =
+        List.fold_left (fun acc elem -> elem ^ " " ^ acc) "" game.found_words;
+      highest_possible_score = game.highest_possible_score;
     }
 
   and get_board (game : t) : MultiBoard.t = game.board
@@ -129,18 +180,27 @@ module Game : GameType = struct
     | GoodStart pts -> "Good Start"
     | Beginner pts -> "Beginner"
 
-  (**Returns true if a word [word] is a new word (it has not already in
-     [found_words]), otherwise returns false.*)
+  and string_to_rank (str : string) (hps : int) : rank =
+    let hs = float_of_int hps in
+    match str with
+    | "Beginner" -> Beginner (int_of_float (0.0 *. hs))
+    | "Good Start" -> GoodStart (int_of_float (0.02 *. hs))
+    | "Moving Up" -> MovingUp (int_of_float (0.05 *. hs))
+    | "Good" -> Good (int_of_float (0.08 *. hs))
+    | "Solid" -> Solid (int_of_float (0.15 *. hs))
+    | "Nice" -> Nice (int_of_float (0.25 *. hs))
+    | "Great" -> Great (int_of_float (0.4 *. hs))
+    | "Amazing" -> Amazing (int_of_float (0.5 *. hs))
+    | "Genius" -> Genius (int_of_float (0.7 *. hs))
+    | "QueenBee" -> QueenBee (int_of_float hs)
+    | _ -> failwith "Not a valid rank"
+
   and new_word (word : string) (found_words : string list) : bool =
     match found_words with
     | [] -> true
     | h :: t ->
         if h = String.uppercase_ascii word then false else new_word word t
 
-  (**Returns true if a word [word] is a valid word. [word] is valid if it has
-     not already been found in this game, if it is contained in the board of
-     [game], and is contained in the dictionary of [game]. Returns false
-     otherwise.*)
   and valid_word (word : string) (game : t) : bool =
     let new_word = new_word word game.found_words in
     let valid_board_word = MultiBoard.contains word game.board in

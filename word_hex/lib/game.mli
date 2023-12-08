@@ -22,12 +22,30 @@ module type GameType = sig
         (**Representation type of the possible ranks earned during game play.
            Each rank stores the minimum score needed to reach each rank.*)
 
+  type data = {
+    shape : string;
+    char_list : string;
+    score : int;
+    rank : string;
+    found_words : string;
+    highest_possible_score : int;
+  }
+  (**Representation type of the game data.*)
+
   val build : string list option -> MultiBoard.shape -> D.t -> t
   (** Given a list of custom words [words] and the number of hexes that the game
       board should have [hexes], returns a word_hex game. *)
 
   val build_of_board :
     string list option -> MultiBoard.shape -> D.t -> MultiBoard.t -> t
+  (** Given a list of custom words [words], a shape of the board [shape], and a
+      dictionary [dict], returns a new board.*)
+
+  val build_of_data : data -> D.t -> t
+  (** Given board data [data] and a dictionary [dict], makes a new game.*)
+
+  val get_game_data : t -> data
+  (**Given a game [game], returns the data stored in [game]*)
 
   val get_board : t -> MultiBoard.t
   (** Returns the board [board] of a given game [game]*)
