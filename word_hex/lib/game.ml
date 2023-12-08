@@ -137,7 +137,7 @@ module Game : GameType = struct
       shape = MultiBoard.string_of_shape (MultiBoard.shape_of_board game.board);
       char_list =
         List.fold_left
-          (fun acc elem -> String.make 1 elem ^ " " ^ acc)
+          (fun acc elem -> acc ^ " " ^ String.make 1 elem)
           ""
           (MultiBoard.get_letters game.board);
       score = game.score;

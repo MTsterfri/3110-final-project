@@ -5,7 +5,41 @@
    Dictionary modules. The gui and most other funtions in bin/main.ml were
    manually tests
 
-   Game Module:
+   Game Module: The game module was primarily tested through manual testing via
+   user interaction with terminal gameplay, with some supplemental automated
+   OUnit tests. The OUnit tests focused on the features of the game involving
+   the highest possible score, finding the solution set for a particular board,
+   and calculating rankings. Automatic testing was used for this component of
+   the Game module because of the fact that the actual game utilizes the full
+   dictionary, so it would be difficult (and take an extremely long time) to
+   visually know if all of the possible solution words were included in the
+   solution set. By making our own smaller dictionaries, it was easy to use
+   OUnit tests to see if words were missing from the solution set, count the
+   expected points earned by each of these words in the solution set, calculate
+   the corresponding ranking, and compare the latter calculations to those
+   outputted by functions related to score and rank calculations. A combination
+   of glass box and black box testing was used to do so (glass box regarding the
+   score calcualtion for pangrams, for example, vs. black box when testing if
+   the board contained a pangram). This, the fact that we used the OUnit suite
+   to test corner cases, and our use of the terminal regarding the visual
+   effects of our functions, helps us ensure that our system is correct. The
+   other functionalities of the game module were significantly more focused on
+   user interaction, and were thus better tested by playing the game in the
+   terminal. Many of the functions in the Game module utilized functions
+   previously tested in the Board and Dictionary modules, and so after both
+   normal gameplay and playing game situations with corner cases, we were
+   confident that the previously tested functions in other modules were being
+   used correctly in the Game module, and were resulting in the correct outputs.
+   Excessive manual testing (again with both black box and glass box tests) was
+   used particularly to test the save functionality. Corner cases involving
+   different game names, different player names, etc. were all tested, and by
+   all three of us to ensure that all situations were covered. The fact that
+   Multiboard functions applied to all of the different board shapes (and were
+   previously tested in the Board module) also strengthens our confidence in the
+   correctness of the system, because we know that if the Game functions worked
+   on one board shape using the generalized Multiboard functions, they would
+   work on all boards (and this idea was even manually tested a little bit to
+   confirm our reasoning).
 
    Board Module:
 
