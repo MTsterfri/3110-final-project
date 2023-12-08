@@ -22,21 +22,27 @@ demo-video-url: ""
 # Write a short, attention-grabbing description of your project.
 desc: >
   Our project is inspired by The New York Times Spelling Bee. The original game 
-  gives the player a board of seven letters (displayed as a hexagon with six 
-  letters on each corner and one in the center). The player should attempt to 
-  produce as many words as possible using the provided letters, but always 
-  using the center letter. Letters may be repeated.
+  gives the player a board of seven letters (displayed as a hexagon, or "hex", 
+  with six letters on each corner and one in the center). The player should 
+  attempt to produce as many words as possible using the provided letters, but 
+  each word must contain the center letter. Letters may be repeated.
 
-  Our game implements this using both a gui and the terminal. The game is run in 
-  the gui at the beginning and you are given a choice of playing a base 
-  version of the original game in the gui or continuing in the command line with
+  Our game implements this using both a GUI and the terminal. The game is run in 
+  the GUI at the beginning and the player is given a choice of using the base 
+  version of the original game in the GUI, or continuing in the command line with
   additional features.
 
-  The command line version lets you play with new implementations of board
-  shapes, using multiple hexagons, as well as different functions which can be accessed
-  with "#help". Using multiple hexagons, a word can only be composed in one of
-  integrated hexagons.
+  The command line version integrates new implementations of board
+  shapes (using multiple hexes). Note that if playing on a multi-hex board, a 
+  word can only be composed using one of the integrated hexes. This version also 
+  involves different commands, all accessible via "#help". At the start of the 
+  game, the player is prompted to enter both a Game Name and a Player Name. 
+  Using the "#save" command, the data for this particular game and player can 
+  be saved, and later reloaded by entering the same Game Name and Player Name at 
+  the start of the new game.
 
   In both implementations, players get one point for four letter words and one
-  point per letter for longer words. They are given a ranking throughout the
-  game based on the difficulty of the board they are on.
+  point per letter for longer words, with pangrams being the exception. A 
+  "pangram" is a word that contains all of the letters in the hex, and earns 
+  the player an additional seven points for the word. Players are given a ranking 
+  throughout the game based on the difficulty of the board they are on.
