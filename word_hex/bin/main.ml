@@ -52,7 +52,12 @@ and repl (game : G.t) (dict : D.t) : unit =
         repl (G.update game input) dict
 
 and choose_shape () : MultiBoard.shape =
-  print_string "Choose a shape for your game board: \n \n   - Hex \n   - TwoHex";
+  print_string
+    "Choose a shape for your game board: \n\
+    \ \n\
+    \   - Hex \n\
+    \   - TwoHex \n\
+    \   - Triple";
   print_newline ();
   let input = read_line () in
   let shape_option = MultiBoard.shape_of_string input in
