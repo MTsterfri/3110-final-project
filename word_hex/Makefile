@@ -24,3 +24,6 @@ zip:
 clean:
 	dune clean
 	rm -f word_hex.zip
+
+doc:
+	dune build @doc

@@ -1,3 +1,23 @@
+(*****************************************************************)
+(* Test Plan
+
+   Our group made test cases for some aspects the Game module, Board module, and
+   Dictionary modules. The gui and most other funtions in bin/main.ml were
+   manually tests
+
+   Game Module:
+
+   Board Module:
+
+   Dictionary Module: The main testing strategy with the dictionary module was
+   to use test driven development. Before each function was made, at least three
+   black box tests would be created. Based on implementations and smaller
+   features that provided boundary cases, the tests were updated. These tests
+   show the correctness of our system because they are used mostly on typical
+   cases that will occur in our program as well as noticable boundary cases that
+   could provide an error if left untested.*)
+(*****************************************************************)
+
 open OUnit2
 open Word_hex
 open Board
