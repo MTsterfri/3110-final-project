@@ -228,6 +228,9 @@ let hex_rep_ok (h : hex) : bool =
   && (not (list_contains h.h4 [ h.h5; h.center; h.h0; h.h1; h.h2; h.h3 ]))
   && not (list_contains h.h5 [ h.center; h.h0; h.h1; h.h2; h.h3; h.h4 ])
 
+let list_hex (h : hex) : char list =
+  [ h.center; h.h0; h.h1; h.h2; h.h3; h.h4; h.h5 ]
+
 (*******************************************************)
 (***************** HEX BOARD MODULE ********************)
 
@@ -283,7 +286,7 @@ module HexBoard : BoardType = struct
      print_char board.h2; print_newline (); print_string short; print_char
      board.h3; print_newline () *)
 
-  let get_letters b = [ b.center; b.h0; b.h1; b.h2; b.h3; b.h4; b.h5 ]
+  let get_letters b = list_hex b
 
   let board_of_letters lst =
     assert (List.length lst = 7);
@@ -409,23 +412,7 @@ module TwoHex : BoardType = struct
      print_string med; print_char b2.h2; print_newline (); print_string long;
      print_char b2.h3; print_newline () *)
 
-  let get_letters (b1, b2) =
-    [
-      b1.center;
-      b1.h0;
-      b1.h1;
-      b1.h2;
-      b1.h3;
-      b1.h4;
-      b1.h5;
-      b2.center;
-      b2.h0;
-      b2.h1;
-      b2.h2;
-      b2.h3;
-      b2.h4;
-      b2.h5;
-    ]
+  let get_letters (b1, b2) = list_hex b1 @ list_hex b2
 
   let board_of_letters lst =
     assert (List.length lst = 14);
@@ -745,36 +732,7 @@ module TripleBoard : BoardType = struct
 
   let get_letters ({ left = lh; right = rh; down = dh; center = ch } : t) :
       char list =
-    [
-      lh.center;
-      lh.h0;
-      lh.h1;
-      lh.h2;
-      lh.h3;
-      lh.h4;
-      lh.h5;
-      rh.center;
-      rh.h0;
-      rh.h1;
-      rh.h2;
-      rh.h3;
-      rh.h4;
-      rh.h5;
-      dh.center;
-      dh.h0;
-      dh.h1;
-      dh.h2;
-      dh.h3;
-      dh.h4;
-      dh.h5;
-      ch.center;
-      ch.h0;
-      ch.h1;
-      ch.h2;
-      ch.h3;
-      ch.h4;
-      ch.h5;
-    ]
+    list_hex lh @ list_hex rh @ list_hex dh @ list_hex ch
 
   let board_of_letters lst =
     assert (List.length lst = 28);
@@ -1110,36 +1068,7 @@ module FlowerBoard : BoardType = struct
 
   let get_letters ({ top = th; down = dh; side = sh; center = ch } : t) :
       char list =
-    [
-      th.center;
-      th.h0;
-      th.h1;
-      th.h2;
-      th.h3;
-      th.h4;
-      th.h5;
-      dh.center;
-      dh.h0;
-      dh.h1;
-      dh.h2;
-      dh.h3;
-      dh.h4;
-      dh.h5;
-      sh.center;
-      sh.h0;
-      sh.h1;
-      sh.h2;
-      sh.h3;
-      sh.h4;
-      sh.h5;
-      ch.center;
-      ch.h0;
-      ch.h1;
-      ch.h2;
-      ch.h3;
-      ch.h4;
-      ch.h5;
-    ]
+    list_hex th @ list_hex dh @ list_hex sh @ list_hex ch
 
   let board_of_letters (lst : char list) : t =
     assert (List.length lst = 28);
@@ -1320,50 +1249,8 @@ module Honeycomb : BoardType = struct
   let print b = print_string (string_of_board b)
 
   let get_letters ((b1, b2, b3, b4, b5, b6) : t) : char list =
-    [
-      b1.center;
-      b1.h0;
-      b1.h1;
-      b1.h2;
-      b1.h3;
-      b1.h4;
-      b1.h5;
-      b2.center;
-      b2.h0;
-      b2.h1;
-      b2.h2;
-      b2.h3;
-      b2.h4;
-      b2.h5;
-      b3.center;
-      b3.h0;
-      b3.h1;
-      b3.h2;
-      b3.h3;
-      b3.h4;
-      b3.h5;
-      b4.center;
-      b4.h0;
-      b4.h1;
-      b4.h2;
-      b4.h3;
-      b4.h4;
-      b4.h5;
-      b5.center;
-      b5.h0;
-      b5.h1;
-      b5.h2;
-      b5.h3;
-      b5.h4;
-      b5.h5;
-      b6.center;
-      b6.h0;
-      b6.h1;
-      b6.h2;
-      b6.h3;
-      b6.h4;
-      b6.h5;
-    ]
+    list_hex b1 @ list_hex b2 @ list_hex b3 @ list_hex b4 @ list_hex b5
+    @ list_hex b6
 
   let board_of_letters (lst : char list) : t =
     assert (List.length lst = 42);
