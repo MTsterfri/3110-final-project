@@ -7,7 +7,13 @@
 
    Game Module:
 
-   Board Module:
+   Board Module: Since the build function in a BoardType module creates a random
+   board, the main strategy for testing was to test different properties that
+   should hold true for any board. These generalized property is run on 100
+   different randomly generated boards in each test case. However, due to this
+   random element, some of the functions could not be tested via unit tests.
+   Functions such as string_of_board and print are tested through game play on
+   the command line.
 
    Dictionary Module: The main testing strategy with the dictionary module was
    to use test driven development. Before each function was made, at least three
