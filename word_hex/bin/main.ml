@@ -119,19 +119,83 @@ let rec other_loop () =
       else ();
       repl game dict
 
-let rec one_loop (game : Game.t) (dict : D.t) =
+(** helper function to collect words *)
+let rec pop_keys key text len =
+  let ikey = Uchar.to_int key in
+  if ikey >= 32 && ikey <= 125 && len < 20 then (
+    Bytes.set text len (Char.uppercase_ascii (Uchar.to_char key));
+    pop_keys (Raylib.get_char_pressed ()) text (len + 1))
+  else len
+
+let rec one_loop (text_box : Raylib.Rectangle.t) text (game : Game.t)
+    (len : int) (dict : D.t) =
+  let open Raylib in
+  match window_should_close () with
+  | true -> close_window ()
+  | false ->
+      let len =
+        let len = pop_keys (get_char_pressed ()) text len in
+        if is_key_pressed Key.Backspace && len > 0 then (
+          Bytes.set text (len - 1) '\000';
+          len - 1)
+        else len
+      in
+      let game_update =
+        if is_key_pressed Key.Enter then
+          let str =
+            String.sub (String.lowercase_ascii (String.of_bytes text)) 0 len
+          in
+          (* commented out for testing in terminal *)
+          (* let _ = Game.print game in let _ = print_endline ("\"" ^ str ^
+             "\"") in let _ = print_endline (string_of_bool (D.contains str
+             dict)) in *)
+          Game.update game str
+        else game
+      in
+      begin_drawing ();
+      clear_background Color.raywhite;
+      draw_text
+        ("Score : " ^ string_of_int (Game.get_score game))
+        30 25 20 Color.darkgray;
+      draw_text ("Rank : " ^ Game.get_rank_str game) 30 45 20 Color.darkgray;
+      draw_text
+        (MultiBoard.string_of_board (Game.get_board game))
+        320 100 30 Color.black;
+
+      (* begin drawing text *)
+      draw_text (Bytes.to_string text)
+        ((Rectangle.x text_box |> Int.of_float) + 5)
+        ((Rectangle.y text_box |> Int.of_float) + 4)
+        40 Color.blue;
+      draw_text
+        (Printf.sprintf "max chars: %i/20" len)
+        330 415 20 Color.darkgray;
+
+      end_drawing ();
+      one_loop text_box text game_update len dict
+
+(* crates a one hex gui *)
+let setup_one_loop () =
   match Raylib.window_should_close () with
   | true -> Raylib.close_window ()
   | false ->
       let open Raylib in
       begin_drawing ();
       clear_background Color.raywhite;
-      draw_text ("Score : " ^ string_of_int 0) 30 25 20 Color.darkgray;
-      draw_text "Unimplemented One Hex" 280 200 20 Color.darkgray;
+      draw_text "Please wait while game is set up..." 280 200 20 Color.darkgray;
       end_drawing ();
-      one_loop game dict
+      let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
+      let dict = D.of_list dict_lst in
+      let game =
+        Game.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
+      in
+      let text_box = Rectangle.create 275. 375. 240. 40. in
+      let text = Bytes.create 20 in
+      Bytes.fill text 0 20 '\000';
+      print_string (Bytes.to_string text);
+      one_loop text_box text game 0 dict
 
-(* completed up to here *)
+(* home screen for word_hex *)
 let rec intro_loop () =
   match Raylib.window_should_close () with
   | true -> Raylib.close_window ()
@@ -145,7 +209,9 @@ let rec intro_loop () =
         \      the center letter and has the option of the outer ones" 75 190 20
         Color.darkgray;
       draw_text "Select a board shape to begin" 250 290 20 Color.darkgray;
+      (* one hex *)
       draw_rectangle 250 350 100 50 Color.blue;
+      (* other shape *)
       draw_rectangle 450 350 100 50 Color.blue;
       draw_text "One Hex" 265 370 18 Color.white;
       draw_text "Other \nShape" 470 355 18 Color.white;
@@ -157,13 +223,7 @@ let rec intro_loop () =
       let on_one = x >= 250. && x <= 350. && y >= 350. && y <= 400. in
       let on_other = x >= 450. && x <= 550. && y >= 350. && y <= 400. in
       if isDown && on_other then other_loop ()
-      else if isDown && on_one then
-        let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
-        let dict = D.of_list dict_lst in
-        let game =
-          Game.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
-        in
-        one_loop game dict
+      else if isDown && on_one then setup_one_loop ()
       else intro_loop ()
 
 let () =
