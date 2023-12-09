@@ -2,6 +2,7 @@
 module type BoardType = sig
   type t
 
+  val rep_ok : t -> bool
   val build : string list option -> t
   val contains : string -> t -> bool
   val is_pangram : string -> t -> bool
@@ -214,6 +215,22 @@ let fill_in_n (lst : char list) (n : int) : char list =
   let extra_letters = difference extras lst in
   take n extra_letters
 
+let list_contains (elem : 'a) (lst : 'a list) : bool =
+  List.exists (fun x -> x = elem) lst
+
+(* Checks that each character in the hex is unique*)
+let hex_rep_ok (h : hex) : bool =
+  (not (list_contains h.center [ h.h0; h.h1; h.h2; h.h3; h.h4; h.h5 ]))
+  && (not (list_contains h.h0 [ h.h1; h.h2; h.h3; h.h4; h.h5; h.center ]))
+  && (not (list_contains h.h1 [ h.h2; h.h3; h.h4; h.h5; h.center; h.h0 ]))
+  && (not (list_contains h.h2 [ h.h3; h.h4; h.h5; h.center; h.h0; h.h1 ]))
+  && (not (list_contains h.h3 [ h.h4; h.h5; h.center; h.h0; h.h1; h.h2 ]))
+  && (not (list_contains h.h4 [ h.h5; h.center; h.h0; h.h1; h.h2; h.h3 ]))
+  && not (list_contains h.h5 [ h.center; h.h0; h.h1; h.h2; h.h3; h.h4 ])
+
+let list_hex (h : hex) : char list =
+  [ h.center; h.h0; h.h1; h.h2; h.h3; h.h4; h.h5 ]
+
 (*******************************************************)
 (***************** HEX BOARD MODULE ********************)
 
@@ -221,6 +238,7 @@ let fill_in_n (lst : char list) (n : int) : char list =
 module HexBoard : BoardType = struct
   type t = hex
 
+  let rep_ok h = hex_rep_ok h
   let build_random () : t = hex_build_random ()
   let build_custom (input : string list) : t = failwith "Unimplemented"
 
@@ -268,7 +286,7 @@ module HexBoard : BoardType = struct
      print_char board.h2; print_newline (); print_string short; print_char
      board.h3; print_newline () *)
 
-  let get_letters b = [ b.center; b.h0; b.h1; b.h2; b.h3; b.h4; b.h5 ]
+  let get_letters b = list_hex b
 
   let board_of_letters lst =
     assert (List.length lst = 7);
@@ -291,6 +309,9 @@ end
 
 module TwoHex : BoardType = struct
   type t = hex * hex
+
+  let rep_ok (b1, b2) =
+    hex_rep_ok b1 && hex_rep_ok b2 && b1.h2 = b2.h0 && b1.h3 = b2.h5
 
   let build_random () : t =
     let b1 = hex_build_random () in
@@ -321,7 +342,53 @@ module TwoHex : BoardType = struct
     let word_upper = String.uppercase_ascii word in
     hex_is_pangram b1 word_upper || hex_is_pangram b2 word_upper
 
-  let shuffle b = b
+  let shuffle_outer (b1, b2) =
+    let b1_outer = [ b1.h0; b1.h1; b1.h4; b1.h5 ] in
+    let b2_outer = [ b2.h1; b2.h2; b2.h3; b2.h4 ] in
+    let b1_random = randomize [] b1_outer in
+    let b2_random = randomize [] b2_outer in
+    ( {
+        center = b1.center;
+        h0 = List.nth b1_random 0;
+        h1 = List.nth b1_random 1;
+        h2 = b1.h2;
+        h3 = b1.h3;
+        h4 = List.nth b1_random 2;
+        h5 = List.nth b1_random 3;
+      },
+      {
+        center = b2.center;
+        h0 = b2.h0;
+        h1 = List.nth b2_random 0;
+        h2 = List.nth b2_random 1;
+        h3 = List.nth b2_random 2;
+        h4 = List.nth b2_random 3;
+        h5 = b2.h5;
+      } )
+
+  let flip (b1, b2) =
+    ( {
+        center = b2.center;
+        h0 = b2.h2;
+        h1 = b2.h1;
+        h2 = b2.h0;
+        h3 = b2.h5;
+        h4 = b2.h4;
+        h5 = b2.h3;
+      },
+      {
+        center = b1.center;
+        h0 = b1.h2;
+        h1 = b1.h1;
+        h2 = b1.h0;
+        h3 = b1.h5;
+        h4 = b1.h4;
+        h5 = b1.h3;
+      } )
+
+  let shuffle b =
+    let b' = shuffle_outer b in
+    if Random.int 3 = 0 then flip b' else b'
 
   let string_of_board ((b1, b2) : t) : string =
     let short = "     " in
@@ -345,23 +412,7 @@ module TwoHex : BoardType = struct
      print_string med; print_char b2.h2; print_newline (); print_string long;
      print_char b2.h3; print_newline () *)
 
-  let get_letters (b1, b2) =
-    [
-      b1.center;
-      b1.h0;
-      b1.h1;
-      b1.h2;
-      b1.h3;
-      b1.h4;
-      b1.h5;
-      b2.center;
-      b2.h0;
-      b2.h1;
-      b2.h2;
-      b2.h3;
-      b2.h4;
-      b2.h5;
-    ]
+  let get_letters (b1, b2) = list_hex b1 @ list_hex b2
 
   let board_of_letters lst =
     assert (List.length lst = 14);
@@ -401,6 +452,13 @@ module TripleBoard : BoardType = struct
     down : hex;
     center : hex;
   }
+
+  let rep_ok ({ left = lh; right = rh; down = dh; center = ch } : t) : bool =
+    hex_rep_ok lh && hex_rep_ok rh && hex_rep_ok dh && hex_rep_ok ch
+    && ch.h0 = lh.h1 && ch.h0 = rh.h5 && ch.h5 = lh.center && ch.h1 = rh.center
+    && ch.center = lh.h2 && ch.center = rh.h4 && ch.center = dh.h0
+    && ch.h4 = lh.h3 && ch.h4 = dh.h5 && ch.h2 = rh.h3 && ch.h2 = dh.h1
+    && ch.h3 = dh.center
 
   let build input =
     ignore input;
@@ -462,7 +520,188 @@ module TripleBoard : BoardType = struct
     || hex_is_pangram dh word_upper
     || hex_is_pangram ch word_upper
 
-  let shuffle b = b
+  let shuffle_outer ({ left = lh; right = rh; down = dh; center = ch } : t) : t
+      =
+    let lh_outer = [ lh.h0; lh.h4; lh.h5 ] in
+    let rh_outer = [ rh.h0; rh.h1; rh.h2 ] in
+    let dh_outer = [ dh.h2; dh.h3; dh.h4 ] in
+    let lh_random = randomize [] lh_outer in
+    let rh_random = randomize [] rh_outer in
+    let dh_random = randomize [] dh_outer in
+    let lh_new =
+      {
+        center = lh.center;
+        h0 = List.nth lh_random 0;
+        h1 = lh.h1;
+        h2 = lh.h2;
+        h3 = lh.h3;
+        h4 = List.nth lh_random 1;
+        h5 = List.nth lh_random 2;
+      }
+    in
+    let rh_new =
+      {
+        center = rh.center;
+        h0 = List.nth rh_random 0;
+        h1 = List.nth rh_random 1;
+        h2 = List.nth rh_random 2;
+        h3 = rh.h3;
+        h4 = rh.h4;
+        h5 = rh.h5;
+      }
+    in
+    let dh_new =
+      {
+        center = dh.center;
+        h0 = dh.h0;
+        h1 = dh.h1;
+        h2 = List.nth dh_random 0;
+        h3 = List.nth dh_random 1;
+        h4 = List.nth dh_random 2;
+        h5 = dh.h5;
+      }
+    in
+    { left = lh_new; right = rh_new; down = dh_new; center = ch }
+
+  let flip_left ({ left = lh; right = rh; down = dh; center = ch } : t) : t =
+    {
+      left =
+        {
+          center = lh.center;
+          h0 = lh.h4;
+          h1 = lh.h3;
+          h2 = lh.h2;
+          h3 = lh.h1;
+          h4 = lh.h0;
+          h5 = lh.h5;
+        };
+      right =
+        {
+          center = dh.center;
+          h0 = dh.h4;
+          h1 = dh.h3;
+          h2 = dh.h2;
+          h3 = rh.h3;
+          h4 = rh.h4;
+          h5 = dh.h5;
+        };
+      down =
+        {
+          center = rh.center;
+          h0 = dh.h0;
+          h1 = dh.h1;
+          h2 = rh.h2;
+          h3 = rh.h1;
+          h4 = rh.h0;
+          h5 = rh.h5;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h4;
+          h1 = ch.h3;
+          h2 = ch.h2;
+          h3 = ch.h1;
+          h4 = ch.h0;
+          h5 = ch.h5;
+        };
+    }
+
+  let flip_right ({ left = lh; right = rh; down = dh; center = ch } : t) : t =
+    {
+      left =
+        {
+          center = dh.center;
+          h0 = dh.h2;
+          h1 = dh.h1;
+          h2 = lh.h2;
+          h3 = lh.h3;
+          h4 = dh.h4;
+          h5 = dh.h3;
+        };
+      right =
+        {
+          center = rh.center;
+          h0 = rh.h2;
+          h1 = rh.h1;
+          h2 = rh.h0;
+          h3 = rh.h5;
+          h4 = rh.h4;
+          h5 = rh.h3;
+        };
+      down =
+        {
+          center = lh.center;
+          h0 = dh.h0;
+          h1 = lh.h1;
+          h2 = lh.h0;
+          h3 = lh.h5;
+          h4 = lh.h4;
+          h5 = dh.h5;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h2;
+          h1 = ch.h1;
+          h2 = ch.h0;
+          h3 = ch.h5;
+          h4 = ch.h4;
+          h5 = ch.h3;
+        };
+    }
+
+  let flip_down ({ left = lh; right = rh; down = dh; center = ch } : t) : t =
+    {
+      left =
+        {
+          center = rh.center;
+          h0 = rh.h0;
+          h1 = lh.h1;
+          h2 = lh.h2;
+          h3 = rh.h3;
+          h4 = rh.h2;
+          h5 = rh.h1;
+        };
+      right =
+        {
+          center = lh.center;
+          h0 = lh.h0;
+          h1 = lh.h5;
+          h2 = lh.h4;
+          h3 = lh.h3;
+          h4 = rh.h4;
+          h5 = rh.h5;
+        };
+      down =
+        {
+          center = dh.center;
+          h0 = dh.h0;
+          h1 = dh.h5;
+          h2 = dh.h4;
+          h3 = dh.h3;
+          h4 = dh.h2;
+          h5 = dh.h1;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h0;
+          h1 = ch.h5;
+          h2 = ch.h4;
+          h3 = ch.h3;
+          h4 = ch.h2;
+          h5 = ch.h1;
+        };
+    }
+
+  let shuffle b =
+    let b' = shuffle_outer b in
+    match Random.int 3 with
+    | 0 -> flip_left b'
+    | 1 -> flip_right b'
+    | 2 -> flip_down b'
+    | _ -> assert false
 
   let string_of_board ({ left = lh; right = rh; down = dh; center = ch } : t) :
       string =
@@ -493,36 +732,7 @@ module TripleBoard : BoardType = struct
 
   let get_letters ({ left = lh; right = rh; down = dh; center = ch } : t) :
       char list =
-    [
-      lh.center;
-      lh.h0;
-      lh.h1;
-      lh.h2;
-      lh.h3;
-      lh.h4;
-      lh.h5;
-      rh.center;
-      rh.h0;
-      rh.h1;
-      rh.h2;
-      rh.h3;
-      rh.h4;
-      rh.h5;
-      dh.center;
-      dh.h0;
-      dh.h1;
-      dh.h2;
-      dh.h3;
-      dh.h4;
-      dh.h5;
-      ch.center;
-      ch.h0;
-      ch.h1;
-      ch.h2;
-      ch.h3;
-      ch.h4;
-      ch.h5;
-    ]
+    list_hex lh @ list_hex rh @ list_hex dh @ list_hex ch
 
   let board_of_letters lst =
     assert (List.length lst = 28);
@@ -590,6 +800,11 @@ module FlowerBoard : BoardType = struct
     center : hex;
   }
 
+  let rep_ok ({ top = th; down = dh; side = sh; center = ch } : t) : bool =
+    hex_rep_ok th && hex_rep_ok dh && hex_rep_ok sh && hex_rep_ok ch
+    && ch.h0 = th.h2 && ch.h1 = sh.h5 && ch.h2 = sh.h4 && ch.h3 = dh.h1
+    && ch.h4 = dh.h0 && ch.h5 = th.h3
+
   let build input =
     ignore input;
     (* First make the center hex*)
@@ -650,7 +865,187 @@ module FlowerBoard : BoardType = struct
     || hex_is_pangram sh word_upper
     || hex_is_pangram ch word_upper
 
-  let shuffle b = b
+  let shuffle_outer ({ top = th; down = dh; side = sh; center = ch } : t) : t =
+    let th_outer = [ th.h0; th.h1; th.h4; th.h5 ] in
+    let dh_outer = [ dh.h2; dh.h3; dh.h4; dh.h5 ] in
+    let sh_outer = [ sh.h0; sh.h1; sh.h2; sh.h3 ] in
+    let th_random = randomize [] th_outer in
+    let dh_random = randomize [] dh_outer in
+    let sh_random = randomize [] sh_outer in
+    let th_new =
+      {
+        center = th.center;
+        h0 = List.nth th_random 0;
+        h1 = List.nth th_random 1;
+        h2 = th.h2;
+        h3 = th.h3;
+        h4 = List.nth th_random 2;
+        h5 = List.nth th_random 3;
+      }
+    in
+    let dh_new =
+      {
+        center = dh.center;
+        h0 = dh.h0;
+        h1 = dh.h1;
+        h2 = List.nth dh_random 0;
+        h3 = List.nth dh_random 1;
+        h4 = List.nth dh_random 2;
+        h5 = List.nth dh_random 3;
+      }
+    in
+    let sh_new =
+      {
+        center = sh.center;
+        h0 = List.nth sh_random 0;
+        h1 = List.nth sh_random 1;
+        h2 = List.nth sh_random 2;
+        h3 = List.nth sh_random 3;
+        h4 = sh.h4;
+        h5 = sh.h5;
+      }
+    in
+    { top = th_new; down = dh_new; side = sh_new; center = ch }
+
+  let flip_top ({ top = th; down = dh; side = sh; center = ch } : t) : t =
+    {
+      top =
+        {
+          center = th.center;
+          h0 = th.h5;
+          h1 = th.h4;
+          h2 = th.h3;
+          h3 = th.h2;
+          h4 = th.h1;
+          h5 = th.h0;
+        };
+      down =
+        {
+          center = sh.center;
+          h0 = sh.h5;
+          h1 = sh.h4;
+          h2 = sh.h3;
+          h3 = sh.h2;
+          h4 = sh.h1;
+          h5 = sh.h0;
+        };
+      side =
+        {
+          center = dh.center;
+          h0 = dh.h5;
+          h1 = dh.h4;
+          h2 = dh.h3;
+          h3 = dh.h2;
+          h4 = dh.h1;
+          h5 = dh.h0;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h5;
+          h1 = ch.h4;
+          h2 = ch.h3;
+          h3 = ch.h2;
+          h4 = ch.h1;
+          h5 = ch.h0;
+        };
+    }
+
+  let flip_down ({ top = th; down = dh; side = sh; center = ch } : t) : t =
+    {
+      top =
+        {
+          center = sh.center;
+          h0 = sh.h1;
+          h1 = sh.h0;
+          h2 = sh.h5;
+          h3 = sh.h4;
+          h4 = sh.h3;
+          h5 = sh.h2;
+        };
+      down =
+        {
+          center = dh.center;
+          h0 = dh.h1;
+          h1 = dh.h0;
+          h2 = dh.h5;
+          h3 = dh.h4;
+          h4 = dh.h3;
+          h5 = dh.h2;
+        };
+      side =
+        {
+          center = th.center;
+          h0 = th.h1;
+          h1 = th.h0;
+          h2 = th.h5;
+          h3 = th.h4;
+          h4 = th.h3;
+          h5 = th.h2;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h1;
+          h1 = ch.h0;
+          h2 = ch.h5;
+          h3 = ch.h4;
+          h4 = ch.h3;
+          h5 = ch.h2;
+        };
+    }
+
+  let flip_side ({ top = th; down = dh; side = sh; center = ch } : t) : t =
+    {
+      top =
+        {
+          center = dh.center;
+          h0 = dh.h3;
+          h1 = dh.h2;
+          h2 = dh.h1;
+          h3 = dh.h0;
+          h4 = dh.h5;
+          h5 = dh.h4;
+        };
+      down =
+        {
+          center = th.center;
+          h0 = th.h3;
+          h1 = th.h2;
+          h2 = th.h1;
+          h3 = th.h0;
+          h4 = th.h5;
+          h5 = th.h4;
+        };
+      side =
+        {
+          center = sh.center;
+          h0 = sh.h3;
+          h1 = sh.h2;
+          h2 = sh.h1;
+          h3 = sh.h0;
+          h4 = sh.h5;
+          h5 = sh.h4;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h3;
+          h1 = ch.h2;
+          h2 = ch.h1;
+          h3 = ch.h0;
+          h4 = ch.h5;
+          h5 = ch.h4;
+        };
+    }
+
+  let shuffle b =
+    let b' = shuffle_outer b in
+    match Random.int 3 with
+    | 0 -> flip_top b'
+    | 1 -> flip_down b'
+    | 2 -> flip_side b'
+    | _ -> assert false
 
   let string_of_board ({ top = th; down = dh; side = sh; center = ch } : t) :
       string =
@@ -673,36 +1068,7 @@ module FlowerBoard : BoardType = struct
 
   let get_letters ({ top = th; down = dh; side = sh; center = ch } : t) :
       char list =
-    [
-      th.center;
-      th.h0;
-      th.h1;
-      th.h2;
-      th.h3;
-      th.h4;
-      th.h5;
-      dh.center;
-      dh.h0;
-      dh.h1;
-      dh.h2;
-      dh.h3;
-      dh.h4;
-      dh.h5;
-      sh.center;
-      sh.h0;
-      sh.h1;
-      sh.h2;
-      sh.h3;
-      sh.h4;
-      sh.h5;
-      ch.center;
-      ch.h0;
-      ch.h1;
-      ch.h2;
-      ch.h3;
-      ch.h4;
-      ch.h5;
-    ]
+    list_hex th @ list_hex dh @ list_hex sh @ list_hex ch
 
   let board_of_letters (lst : char list) : t =
     assert (List.length lst = 28);
@@ -764,6 +1130,17 @@ end
 
 module Honeycomb : BoardType = struct
   type t = hex * hex * hex * hex * hex * hex
+
+  let rep_ok (b1, b2, b3, b4, b5, b6) =
+    hex_rep_ok b1 && hex_rep_ok b2 && hex_rep_ok b3 && hex_rep_ok b4
+    && hex_rep_ok b5 && hex_rep_ok b6
+    && (b1.h1 = b3.h0 && b1.h1 = b5.h5)
+    && b1.center = b3.h5 && b3.h1 = b5.center
+    && (b1.h2 = b3.center && b1.h2 = b4.h0 && b1.h2 = b5.h4)
+    && (b1.h3 = b2.h0 && b1.h3 = b3.h4 && b1.h3 = b4.h5)
+    && (b3.h2 = b4.h1 && b3.h2 = b5.h3 && b3.h2 = b6.h0)
+    && (b2.h1 = b3.h3 && b2.h1 = b4.center && b2.h1 = b6.h5)
+    && b2.center = b4.h4 && b4.h2 = b6.center && b2.h2 = b4.h3 && b2.h2 = b6.h4
 
   let build input =
     ignore input;
@@ -872,44 +1249,8 @@ module Honeycomb : BoardType = struct
   let print b = print_string (string_of_board b)
 
   let get_letters ((b1, b2, b3, b4, b5, b6) : t) : char list =
-    [
-      b1.center;
-      b1.h1;
-      b1.h2;
-      b1.h3;
-      b1.h4;
-      b1.h5;
-      b2.center;
-      b2.h1;
-      b2.h2;
-      b2.h3;
-      b2.h4;
-      b2.h5;
-      b3.center;
-      b3.h1;
-      b3.h2;
-      b3.h3;
-      b3.h4;
-      b3.h5;
-      b4.center;
-      b4.h1;
-      b4.h2;
-      b4.h3;
-      b4.h4;
-      b4.h5;
-      b5.center;
-      b5.h1;
-      b5.h2;
-      b5.h3;
-      b5.h4;
-      b5.h5;
-      b6.center;
-      b6.h1;
-      b6.h2;
-      b6.h3;
-      b6.h4;
-      b6.h5;
-    ]
+    list_hex b1 @ list_hex b2 @ list_hex b3 @ list_hex b4 @ list_hex b5
+    @ list_hex b6
 
   let board_of_letters (lst : char list) : t =
     assert (List.length lst = 42);

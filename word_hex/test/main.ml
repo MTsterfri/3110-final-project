@@ -88,10 +88,101 @@ let game_tests =
   ]
 
 (*****************************************************************)
-(* Board Tess *)
+(* Board Tests *)
 (*****************************************************************)
 
-let board_tests = []
+module BoardTest (B : BoardType) = struct
+  let build_test _ = assert_equal (None |> B.build |> B.rep_ok) true
+
+  let shuffle_test _ =
+    assert_equal (None |> B.build |> B.shuffle |> B.rep_ok) true
+
+  let remake_board_test _ =
+    assert_equal
+      (None |> B.build |> B.get_letters |> B.board_of_letters |> B.rep_ok)
+      true
+
+  let contains_too_short _ =
+    assert_equal
+      (let board = B.build None in
+       let fst_hex_c, fst_hex_lst = List.hd (B.board_data board) in
+       let word =
+         String.make 1 (List.nth fst_hex_lst 0) ^ String.make 1 fst_hex_c
+       in
+       B.contains word board)
+      false
+
+  let contains_true _ =
+    assert_equal
+      (let board = B.build None in
+       let fst_hex_c, fst_hex_lst = List.hd (B.board_data board) in
+       let word =
+         String.make 2 (List.nth fst_hex_lst 0)
+         ^ String.make 2 (List.nth fst_hex_lst 1)
+         ^ String.make 2 (List.nth fst_hex_lst 4)
+         ^ String.make 1 fst_hex_c
+       in
+       B.contains word board)
+      true
+
+  let pangram_true _ =
+    assert_equal
+      (let board = B.build None in
+       let fst_hex_c, fst_hex_lst = List.hd (B.board_data board) in
+       let word =
+         String.make 2 (List.nth fst_hex_lst 0)
+         ^ String.make 2 (List.nth fst_hex_lst 1)
+         ^ String.make 2 (List.nth fst_hex_lst 2)
+         ^ String.make 1 (List.nth fst_hex_lst 3)
+         ^ String.make 1 (List.nth fst_hex_lst 4)
+         ^ String.make 1 (List.nth fst_hex_lst 5)
+         ^ String.make 1 fst_hex_c
+       in
+       B.is_pangram word board)
+      true
+
+  let pangram_false _ =
+    assert_equal
+      (let board = B.build None in
+       let fst_hex_c, fst_hex_lst = List.hd (B.board_data board) in
+       let word =
+         String.make 2 (List.nth fst_hex_lst 0)
+         ^ String.make 2 (List.nth fst_hex_lst 1)
+         ^ String.make 2 (List.nth fst_hex_lst 2)
+         ^ String.make 1 (List.nth fst_hex_lst 5)
+         ^ String.make 1 fst_hex_c
+       in
+       B.is_pangram word board)
+      false
+
+  (** Runs the unit test n times *)
+  let rec test_n (n : int) (f : 'a -> unit) (x : 'a) =
+    if n = 0 then f x
+    else (
+      f x;
+      test_n (n - 1) f x)
+
+  let tests =
+    [
+      "build - rep_ok" >:: test_n 100 build_test;
+      "shuffle - rep_ok" >:: test_n 100 shuffle_test;
+      "get_letters, board_of_letters - rep_ok" >:: test_n 100 remake_board_test;
+      "contains too short" >:: test_n 100 contains_too_short;
+      "contains true" >:: test_n 100 contains_true;
+      "pangram false" >:: test_n 100 pangram_false;
+      "pangram true" >:: test_n 100 pangram_true;
+    ]
+end
+
+module HexTest = BoardTest (HexBoard)
+module TwoHexTest = BoardTest (TwoHex)
+module TripleTest = BoardTest (TripleBoard)
+module FlowerTest = BoardTest (FlowerBoard)
+module HoneycombTest = BoardTest (Honeycomb)
+
+let board_tests =
+  HexTest.tests @ TwoHexTest.tests @ TripleTest.tests @ FlowerTest.tests
+  @ HoneycombTest.tests
 
 (*****************************************************************)
 (* trieDictionary *)

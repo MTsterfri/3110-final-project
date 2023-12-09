@@ -3,6 +3,10 @@ module type BoardType = sig
   type t
   (** Type representing the data in the board. *)
 
+  val rep_ok : t -> bool
+  (** Returns if the the given board satifies the internal structural
+      requirements for the type*)
+
   val build : string list option -> t
   (** Given a list of custom words and the number of hexes that the board should
       have, produces a board representation type t that includes some of the
@@ -49,14 +53,14 @@ module HexBoard : BoardType
     in a hexagon). *)
 
 module TwoHex : BoardType
-(* * A Word Hex Board with two hexes (a hex is a group of 7 letters arranged in
-   a hexagon) arranged so that two of the outer letters overlap. *)
+(** A Word Hex Board with two hexes (a hex is a group of 7 letters arranged in a
+    hexagon) arranged so that two of the outer letters overlap. *)
 
 module TripleBoard : BoardType
-(* * A Word Hex Board with four hexes (a hex is a group of 7 letters arranged in
-   a hexagon) that overlap such that there is one hex in the center and three
-   hexes surrounding the center hex, where the center letters of the outer hexes
-   are also outer letters of the center hex. *)
+(** A Word Hex Board with four hexes (a hex is a group of 7 letters arranged in
+    a hexagon) that overlap such that there is one hex in the center and three
+    hexes surrounding the center hex, where the center letters of the outer
+    hexes are also outer letters of the center hex. *)
 
 module FlowerBoard : BoardType
 (** A Word Hex Board with four hexes (a hex is a group of 7 letters arranged in
