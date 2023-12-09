@@ -3,6 +3,10 @@ module type BoardType = sig
   type t
   (** Type representing the data in the board. *)
 
+  val rep_ok : t -> bool
+  (** Returns if the the given board satifies the internal structural
+      requirements for the type*)
+
   val build : string list option -> t
   (** Given a list of custom words and the number of hexes that the board should
       have, produces a board representation type t that includes some of the

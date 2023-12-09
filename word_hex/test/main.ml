@@ -68,10 +68,22 @@ let game_tests =
   ]
 
 (*****************************************************************)
-(* Board Tess *)
+(* Board Tests *)
 (*****************************************************************)
 
-let board_tests = []
+module BoardTest (B : BoardType) = struct
+  let tests = []
+end
+
+module HexTest = BoardTest (HexBoard)
+module TwoHexTest = BoardTest (TwoHex)
+module TripleTest = BoardTest (TripleBoard)
+module FlowerTest = BoardTest (FlowerBoard)
+module HoneycombTest = BoardTest (Honeycomb)
+
+let board_tests =
+  HexTest.tests @ TwoHexTest.tests @ TripleTest.tests @ FlowerTest.tests
+  @ HoneycombTest.tests
 
 (*****************************************************************)
 (* trieDictionary *)

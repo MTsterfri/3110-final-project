@@ -2,6 +2,7 @@
 module type BoardType = sig
   type t
 
+  val rep_ok : t -> bool
   val build : string list option -> t
   val contains : string -> t -> bool
   val is_pangram : string -> t -> bool
@@ -214,6 +215,19 @@ let fill_in_n (lst : char list) (n : int) : char list =
   let extra_letters = difference extras lst in
   take n extra_letters
 
+let list_contains (elem : 'a) (lst : 'a list) : bool =
+  List.exists (fun x -> x = elem) lst
+
+(* Checks that each character in the hex is unique*)
+let hex_rep_ok (h : hex) : bool =
+  (not (list_contains h.center [ h.h0; h.h1; h.h2; h.h3; h.h4; h.h5 ]))
+  && (not (list_contains h.h0 [ h.h1; h.h2; h.h3; h.h4; h.h5; h.center ]))
+  && (not (list_contains h.h1 [ h.h2; h.h3; h.h4; h.h5; h.center; h.h0 ]))
+  && (not (list_contains h.h2 [ h.h3; h.h4; h.h5; h.center; h.h0; h.h1 ]))
+  && (not (list_contains h.h3 [ h.h4; h.h5; h.center; h.h0; h.h1; h.h2 ]))
+  && (not (list_contains h.h4 [ h.h5; h.center; h.h0; h.h1; h.h2; h.h3 ]))
+  && not (list_contains h.h5 [ h.center; h.h0; h.h1; h.h2; h.h3; h.h4 ])
+
 (*******************************************************)
 (***************** HEX BOARD MODULE ********************)
 
@@ -221,6 +235,7 @@ let fill_in_n (lst : char list) (n : int) : char list =
 module HexBoard : BoardType = struct
   type t = hex
 
+  let rep_ok h = hex_rep_ok h
   let build_random () : t = hex_build_random ()
   let build_custom (input : string list) : t = failwith "Unimplemented"
 
@@ -291,6 +306,9 @@ end
 
 module TwoHex : BoardType = struct
   type t = hex * hex
+
+  let rep_ok (b1, b2) =
+    hex_rep_ok b1 && hex_rep_ok b2 && b1.h2 = b2.h0 && b1.h3 = b2.h5
 
   let build_random () : t =
     let b1 = hex_build_random () in
@@ -401,6 +419,13 @@ module TripleBoard : BoardType = struct
     down : hex;
     center : hex;
   }
+
+  let rep_ok ({ left = lh; right = rh; down = dh; center = ch } : t) : bool =
+    hex_rep_ok lh && hex_rep_ok rh && hex_rep_ok dh && hex_rep_ok ch
+    && ch.h0 = lh.h1 && ch.h0 = rh.h5 && ch.h5 = lh.center && ch.h1 = rh.center
+    && ch.center = lh.h2 && ch.center = rh.h4 && ch.center = dh.h0
+    && ch.h4 = lh.h3 && ch.h4 = dh.h5 && ch.h2 = rh.h3 && ch.h2 = lh.h1
+    && ch.h3 = dh.center
 
   let build input =
     ignore input;
@@ -590,6 +615,11 @@ module FlowerBoard : BoardType = struct
     center : hex;
   }
 
+  let rep_ok ({ top = th; down = dh; side = sh; center = ch } : t) : bool =
+    hex_rep_ok th && hex_rep_ok dh && hex_rep_ok sh && hex_rep_ok ch
+    && ch.h0 = th.h2 && ch.h1 = sh.h5 && ch.h2 = sh.h4 && ch.h3 = dh.h1
+    && ch.h4 = dh.h0 && ch.h5 = th.h3
+
   let build input =
     ignore input;
     (* First make the center hex*)
@@ -764,6 +794,17 @@ end
 
 module Honeycomb : BoardType = struct
   type t = hex * hex * hex * hex * hex * hex
+
+  let rep_ok (b1, b2, b3, b4, b5, b6) =
+    hex_rep_ok b1 && hex_rep_ok b2 && hex_rep_ok b3 && hex_rep_ok b4
+    && hex_rep_ok b5 && hex_rep_ok b6
+    && (b1.h1 = b3.h0 && b1.h1 = b5.h5)
+    && b1.center = b3.h5 && b3.h1 = b5.center
+    && (b1.h2 = b3.center && b1.h2 = b4.h0 && b1.h2 = b5.h4)
+    && (b1.h3 = b2.h0 && b1.h3 = b3.h4 && b1.h3 = b4.h5)
+    && (b3.h2 = b4.h1 && b3.h2 = b5.h3 && b3.h2 = b6.h0)
+    && (b2.h1 = b3.h3 && b2.h1 = b4.center && b2.h1 = b6.h5)
+    && b2.center = b4.h4 && b4.h2 = b6.center && b2.h2 = b4.h3 && b2.h2 = b6.h4
 
   let build input =
     ignore input;
