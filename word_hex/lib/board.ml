@@ -424,7 +424,7 @@ module TripleBoard : BoardType = struct
     hex_rep_ok lh && hex_rep_ok rh && hex_rep_ok dh && hex_rep_ok ch
     && ch.h0 = lh.h1 && ch.h0 = rh.h5 && ch.h5 = lh.center && ch.h1 = rh.center
     && ch.center = lh.h2 && ch.center = rh.h4 && ch.center = dh.h0
-    && ch.h4 = lh.h3 && ch.h4 = dh.h5 && ch.h2 = rh.h3 && ch.h2 = lh.h1
+    && ch.h4 = lh.h3 && ch.h4 = dh.h5 && ch.h2 = rh.h3 && ch.h2 = dh.h1
     && ch.h3 = dh.center
 
   let build input =
@@ -915,36 +915,42 @@ module Honeycomb : BoardType = struct
   let get_letters ((b1, b2, b3, b4, b5, b6) : t) : char list =
     [
       b1.center;
+      b1.h0;
       b1.h1;
       b1.h2;
       b1.h3;
       b1.h4;
       b1.h5;
       b2.center;
+      b2.h0;
       b2.h1;
       b2.h2;
       b2.h3;
       b2.h4;
       b2.h5;
       b3.center;
+      b3.h0;
       b3.h1;
       b3.h2;
       b3.h3;
       b3.h4;
       b3.h5;
       b4.center;
+      b4.h0;
       b4.h1;
       b4.h2;
       b4.h3;
       b4.h4;
       b4.h5;
       b5.center;
+      b5.h0;
       b5.h1;
       b5.h2;
       b5.h3;
       b5.h4;
       b5.h5;
       b6.center;
+      b6.h0;
       b6.h1;
       b6.h2;
       b6.h3;
