@@ -172,6 +172,30 @@ let hex_is_pangram (h : hex) (word : string) : bool =
   && String.contains word h.h2 && String.contains word h.h3
   && String.contains word h.h4 && String.contains word h.h5
 
+let hex_build_random () : hex =
+  let combo =
+    match pick_random combinations 1 with
+    | [] -> assert false
+    | c :: _ -> c
+  in
+  let vowels = pick_random vowel_list 2 in
+  let common_consonants = pick_random common_consonant_list 4 in
+  let uncommon_consonants = pick_random uncommon_consonant_list 1 in
+  let long_list =
+    union combo (vowels @ common_consonants @ uncommon_consonants)
+  in
+  let final_list = take 7 long_list in
+  let random_list = randomize [] final_list in
+  {
+    center = List.nth random_list 0;
+    h0 = List.nth random_list 1;
+    h1 = List.nth random_list 2;
+    h2 = List.nth random_list 3;
+    h3 = List.nth random_list 4;
+    h4 = List.nth random_list 5;
+    h5 = List.nth random_list 6;
+  }
+
 (*******************************************************)
 (***************** HEX BOARD MODULE ********************)
 
@@ -179,30 +203,7 @@ let hex_is_pangram (h : hex) (word : string) : bool =
 module HexBoard : BoardType = struct
   type t = hex
 
-  let build_random () : t =
-    let combo =
-      match pick_random combinations 1 with
-      | [] -> assert false
-      | c :: _ -> c
-    in
-    let vowels = pick_random vowel_list 2 in
-    let common_consonants = pick_random common_consonant_list 4 in
-    let uncommon_consonants = pick_random uncommon_consonant_list 1 in
-    let long_list =
-      union combo (vowels @ common_consonants @ uncommon_consonants)
-    in
-    let final_list = take 7 long_list in
-    let random_list = randomize [] final_list in
-    {
-      center = List.nth random_list 0;
-      h0 = List.nth random_list 1;
-      h1 = List.nth random_list 2;
-      h2 = List.nth random_list 3;
-      h3 = List.nth random_list 4;
-      h4 = List.nth random_list 5;
-      h5 = List.nth random_list 6;
-    }
-
+  let build_random () : t = hex_build_random ()
   let build_custom (input : string list) : t = failwith "Unimplemented"
 
   let build (input : string list option) : t =
@@ -833,62 +834,90 @@ end
 module Honeycomb : BoardType = struct
   type t = hex * hex * hex * hex * hex * hex
 
+  let fill_in_3 (lst : char list) : char list =
+    let combo =
+      match pick_random combinations 1 with
+      | [ c ] -> c
+      | _ -> assert false
+    in
+    let vowels = pick_random vowel_list 2 in
+    let cc = pick_random common_consonant_list 3 in
+    let uc = pick_random uncommon_consonant_list 2 in
+    let extras_other = difference (vowels @ cc @ uc) combo in
+    let extras = combo @ randomize [] extras_other in
+    let extra_letters = difference extras lst in
+    extra_letters
+
   let build input =
     ignore input;
-    ( {
-        center = 'F';
-        h0 = 'E';
-        h1 = 'J';
-        h2 = 'K';
-        h3 = 'G';
-        h4 = 'B';
-        h5 = 'A';
-      },
+    (* First build the middle upper hex b3 *)
+    let b3 = hex_build_random () in
+    (* Next fill in middle lower hex b4 - needs three additional letters *)
+    let b4_extra_letters = fill_in_3 [ b3.center; b3.h2; b3.h3; b3.h4 ] in
+    let b4 =
       {
-        center = 'H';
-        h0 = 'G';
-        h1 = 'L';
-        h2 = 'M';
-        h3 = 'I';
-        h4 = 'D';
-        h5 = 'C';
-      },
+        center = b3.h3;
+        h0 = b3.center;
+        h1 = b3.h2;
+        h2 = List.nth b4_extra_letters 0;
+        h3 = List.nth b4_extra_letters 1;
+        h4 = List.nth b4_extra_letters 2;
+        h5 = b3.h4;
+      }
+    in
+    (* Next fill in left upper hex b1 - needs three additional letters *)
+    let b1_extra_letters = fill_in_3 [ b3.center; b3.h0; b3.h4; b3.h5 ] in
+    let b1 =
       {
-        center = 'K';
-        h0 = 'J';
-        h1 = 'O';
-        h2 = 'P';
-        h3 = 'L';
-        h4 = 'G';
-        h5 = 'F';
-      },
+        center = b3.h5;
+        h0 = List.nth b1_extra_letters 0;
+        h1 = b3.h0;
+        h2 = b3.center;
+        h3 = b3.h4;
+        h4 = List.nth b1_extra_letters 1;
+        h5 = List.nth b1_extra_letters 2;
+      }
+    in
+    (* Next fill in left lower hex b2 - needs three additional letters *)
+    let b2_extra_letters = fill_in_3 [ b4.center; b4.h3; b4.h4; b4.h5 ] in
+    let b2 =
       {
-        center = 'L';
-        h0 = 'K';
-        h1 = 'P';
-        h2 = 'Q';
-        h3 = 'M';
-        h4 = 'H';
-        h5 = 'G';
-      },
+        center = b4.h4;
+        h0 = b4.h5;
+        h1 = b4.center;
+        h2 = b4.h3;
+        h3 = List.nth b2_extra_letters 0;
+        h4 = List.nth b2_extra_letters 1;
+        h5 = List.nth b2_extra_letters 2;
+      }
+    in
+    (* Next fill in right upper hex b5 - needs three additional letters *)
+    let b5_extra_letters = fill_in_3 [ b3.center; b3.h0; b3.h1; b3.h2 ] in
+    let b5 =
       {
-        center = 'O';
-        h0 = 'N';
-        h1 = 'S';
-        h2 = 'T';
-        h3 = 'P';
-        h4 = 'K';
-        h5 = 'J';
-      },
+        center = b3.h1;
+        h0 = List.nth b5_extra_letters 0;
+        h1 = List.nth b5_extra_letters 1;
+        h2 = List.nth b5_extra_letters 2;
+        h3 = b3.h2;
+        h4 = b3.center;
+        h5 = b3.h0;
+      }
+    in
+    (* Next fill in right lower hex b6 - needs three additional letters *)
+    let b6_extra_letters = fill_in_3 [ b4.center; b4.h1; b4.h2; b4.h3 ] in
+    let b6 =
       {
-        center = 'Q';
-        h0 = 'P';
-        h1 = 'U';
-        h2 = 'V';
-        h3 = 'R';
-        h4 = 'M';
-        h5 = 'L';
-      } )
+        center = b4.h2;
+        h0 = b4.h1;
+        h1 = List.nth b6_extra_letters 0;
+        h2 = List.nth b6_extra_letters 1;
+        h3 = List.nth b6_extra_letters 2;
+        h4 = b4.h3;
+        h5 = b4.center;
+      }
+    in
+    (b1, b2, b3, b4, b5, b6)
 
   let contains (word : string) ((b1, b2, b3, b4, b5, b6) : t) : bool =
     let word_upper = String.uppercase_ascii word in
