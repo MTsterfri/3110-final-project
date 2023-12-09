@@ -339,7 +339,53 @@ module TwoHex : BoardType = struct
     let word_upper = String.uppercase_ascii word in
     hex_is_pangram b1 word_upper || hex_is_pangram b2 word_upper
 
-  let shuffle b = b
+  let shuffle_outer (b1, b2) =
+    let b1_outer = [ b1.h0; b1.h1; b1.h4; b1.h5 ] in
+    let b2_outer = [ b2.h1; b2.h2; b2.h3; b2.h4 ] in
+    let b1_random = randomize [] b1_outer in
+    let b2_random = randomize [] b2_outer in
+    ( {
+        center = b1.center;
+        h0 = List.nth b1_random 0;
+        h1 = List.nth b1_random 1;
+        h2 = b1.h2;
+        h3 = b1.h3;
+        h4 = List.nth b1_random 2;
+        h5 = List.nth b1_random 3;
+      },
+      {
+        center = b2.center;
+        h0 = b2.h0;
+        h1 = List.nth b2_random 0;
+        h2 = List.nth b2_random 1;
+        h3 = List.nth b2_random 2;
+        h4 = List.nth b2_random 3;
+        h5 = b2.h5;
+      } )
+
+  let flip (b1, b2) =
+    ( {
+        center = b2.center;
+        h0 = b2.h2;
+        h1 = b2.h1;
+        h2 = b2.h0;
+        h3 = b2.h5;
+        h4 = b2.h4;
+        h5 = b2.h3;
+      },
+      {
+        center = b1.center;
+        h0 = b1.h2;
+        h1 = b1.h1;
+        h2 = b1.h0;
+        h3 = b1.h5;
+        h4 = b1.h4;
+        h5 = b1.h3;
+      } )
+
+  let shuffle b =
+    let b' = shuffle_outer b in
+    if Random.int 3 = 0 then flip b' else b'
 
   let string_of_board ((b1, b2) : t) : string =
     let short = "     " in

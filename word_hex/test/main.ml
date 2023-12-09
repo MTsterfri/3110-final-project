@@ -135,6 +135,7 @@ module BoardTest (B : BoardType) = struct
        B.is_pangram word board)
       false
 
+  (** Runs the unit test n times *)
   let rec test_n (n : int) (f : 'a -> unit) (x : 'a) =
     if n = 0 then f x
     else (
