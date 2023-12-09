@@ -196,6 +196,22 @@ let hex_build_random () : hex =
     h5 = List.nth random_list 6;
   }
 
+(** Takes in a lst of 4 characters, representing letters on a partially filled
+    in hex. Returns a list of three additional letters to complete the hex *)
+let fill_in_3 (lst : char list) : char list =
+  let combo =
+    match pick_random combinations 1 with
+    | [ c ] -> c
+    | _ -> assert false
+  in
+  let vowels = pick_random vowel_list 2 in
+  let cc = pick_random common_consonant_list 3 in
+  let uc = pick_random uncommon_consonant_list 2 in
+  let extras_other = difference (vowels @ cc @ uc) combo in
+  let extras = combo @ randomize [] extras_other in
+  let extra_letters = difference extras lst in
+  extra_letters
+
 (*******************************************************)
 (***************** HEX BOARD MODULE ********************)
 
@@ -409,80 +425,48 @@ module TripleBoard : BoardType = struct
 
   let build input =
     ignore input;
-    let lst =
-      [
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-      ]
+    (* First make the center hex*)
+    let ch = hex_build_random () in
+    (* Next make left hex - needs 3 additional letters*)
+    let left_extra_letters = fill_in_3 [ ch.center; ch.h0; ch.h4; ch.h5 ] in
+    let lh =
+      {
+        center = ch.h5;
+        h0 = List.nth left_extra_letters 0;
+        h1 = ch.h0;
+        h2 = ch.center;
+        h3 = ch.h4;
+        h4 = List.nth left_extra_letters 1;
+        h5 = List.nth left_extra_letters 2;
+      }
     in
-    {
-      left =
-        {
-          center = List.nth lst 0;
-          h0 = List.nth lst 1;
-          h1 = List.nth lst 2;
-          h2 = List.nth lst 3;
-          h3 = List.nth lst 4;
-          h4 = List.nth lst 5;
-          h5 = List.nth lst 6;
-        };
-      right =
-        {
-          center = List.nth lst 7;
-          h0 = List.nth lst 8;
-          h1 = List.nth lst 9;
-          h2 = List.nth lst 10;
-          h3 = List.nth lst 11;
-          h4 = List.nth lst 12;
-          h5 = List.nth lst 13;
-        };
-      down =
-        {
-          center = List.nth lst 14;
-          h0 = List.nth lst 15;
-          h1 = List.nth lst 16;
-          h2 = List.nth lst 17;
-          h3 = List.nth lst 18;
-          h4 = List.nth lst 19;
-          h5 = List.nth lst 20;
-        };
-      center =
-        {
-          center = List.nth lst 21;
-          h0 = List.nth lst 22;
-          h1 = List.nth lst 23;
-          h2 = List.nth lst 24;
-          h3 = List.nth lst 25;
-          h4 = List.nth lst 26;
-          h5 = List.nth lst 27;
-        };
-    }
+    (* Next make right hex - needs 3 additional letters*)
+    let right_extra_letters = fill_in_3 [ ch.center; ch.h0; ch.h1; ch.h2 ] in
+    let rh =
+      {
+        center = ch.h1;
+        h0 = List.nth right_extra_letters 0;
+        h1 = List.nth right_extra_letters 1;
+        h2 = List.nth right_extra_letters 2;
+        h3 = ch.h2;
+        h4 = ch.center;
+        h5 = ch.h0;
+      }
+    in
+    (* Next make left hex - needs 3 additional letters*)
+    let down_extra_letters = fill_in_3 [ ch.center; ch.h2; ch.h3; ch.h4 ] in
+    let dh =
+      {
+        center = ch.h3;
+        h0 = ch.center;
+        h1 = ch.h2;
+        h2 = List.nth down_extra_letters 0;
+        h3 = List.nth down_extra_letters 1;
+        h4 = List.nth down_extra_letters 2;
+        h5 = ch.h4;
+      }
+    in
+    { left = lh; right = rh; down = dh; center = ch }
 
   let contains (word : string)
       ({ left = lh; right = rh; down = dh; center = ch } : t) : bool =
@@ -833,20 +817,6 @@ end
 
 module Honeycomb : BoardType = struct
   type t = hex * hex * hex * hex * hex * hex
-
-  let fill_in_3 (lst : char list) : char list =
-    let combo =
-      match pick_random combinations 1 with
-      | [ c ] -> c
-      | _ -> assert false
-    in
-    let vowels = pick_random vowel_list 2 in
-    let cc = pick_random common_consonant_list 3 in
-    let uc = pick_random uncommon_consonant_list 2 in
-    let extras_other = difference (vowels @ cc @ uc) combo in
-    let extras = combo @ randomize [] extras_other in
-    let extra_letters = difference extras lst in
-    extra_letters
 
   let build input =
     ignore input;
