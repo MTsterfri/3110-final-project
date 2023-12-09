@@ -907,7 +907,187 @@ module FlowerBoard : BoardType = struct
     || hex_is_pangram sh word_upper
     || hex_is_pangram ch word_upper
 
-  let shuffle b = b
+  let shuffle_outer ({ top = th; down = dh; side = sh; center = ch } : t) : t =
+    let th_outer = [ th.h0; th.h1; th.h4; th.h5 ] in
+    let dh_outer = [ dh.h2; dh.h3; dh.h4; dh.h5 ] in
+    let sh_outer = [ sh.h0; sh.h1; sh.h2; sh.h3 ] in
+    let th_random = randomize [] th_outer in
+    let dh_random = randomize [] dh_outer in
+    let sh_random = randomize [] sh_outer in
+    let th_new =
+      {
+        center = th.center;
+        h0 = List.nth th_random 0;
+        h1 = List.nth th_random 1;
+        h2 = th.h2;
+        h3 = th.h3;
+        h4 = List.nth th_random 2;
+        h5 = List.nth th_random 3;
+      }
+    in
+    let dh_new =
+      {
+        center = dh.center;
+        h0 = dh.h0;
+        h1 = dh.h1;
+        h2 = List.nth dh_random 0;
+        h3 = List.nth dh_random 1;
+        h4 = List.nth dh_random 2;
+        h5 = List.nth dh_random 3;
+      }
+    in
+    let sh_new =
+      {
+        center = sh.center;
+        h0 = List.nth sh_random 0;
+        h1 = List.nth sh_random 1;
+        h2 = List.nth sh_random 2;
+        h3 = List.nth sh_random 3;
+        h4 = sh.h4;
+        h5 = sh.h5;
+      }
+    in
+    { top = th_new; down = dh_new; side = sh_new; center = ch }
+
+  let flip_top ({ top = th; down = dh; side = sh; center = ch } : t) : t =
+    {
+      top =
+        {
+          center = th.center;
+          h0 = th.h5;
+          h1 = th.h4;
+          h2 = th.h3;
+          h3 = th.h2;
+          h4 = th.h1;
+          h5 = th.h0;
+        };
+      down =
+        {
+          center = sh.center;
+          h0 = sh.h5;
+          h1 = sh.h4;
+          h2 = sh.h3;
+          h3 = sh.h2;
+          h4 = sh.h1;
+          h5 = sh.h0;
+        };
+      side =
+        {
+          center = dh.center;
+          h0 = dh.h5;
+          h1 = dh.h4;
+          h2 = dh.h3;
+          h3 = dh.h2;
+          h4 = dh.h1;
+          h5 = dh.h0;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h5;
+          h1 = ch.h4;
+          h2 = ch.h3;
+          h3 = ch.h2;
+          h4 = ch.h1;
+          h5 = ch.h0;
+        };
+    }
+
+  let flip_down ({ top = th; down = dh; side = sh; center = ch } : t) : t =
+    {
+      top =
+        {
+          center = sh.center;
+          h0 = sh.h1;
+          h1 = sh.h0;
+          h2 = sh.h5;
+          h3 = sh.h4;
+          h4 = sh.h3;
+          h5 = sh.h2;
+        };
+      down =
+        {
+          center = dh.center;
+          h0 = dh.h1;
+          h1 = dh.h0;
+          h2 = dh.h5;
+          h3 = dh.h4;
+          h4 = dh.h3;
+          h5 = dh.h2;
+        };
+      side =
+        {
+          center = th.center;
+          h0 = th.h1;
+          h1 = th.h0;
+          h2 = th.h5;
+          h3 = th.h4;
+          h4 = th.h3;
+          h5 = th.h2;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h1;
+          h1 = ch.h0;
+          h2 = ch.h5;
+          h3 = ch.h4;
+          h4 = ch.h3;
+          h5 = ch.h2;
+        };
+    }
+
+  let flip_side ({ top = th; down = dh; side = sh; center = ch } : t) : t =
+    {
+      top =
+        {
+          center = dh.center;
+          h0 = dh.h3;
+          h1 = dh.h2;
+          h2 = dh.h1;
+          h3 = dh.h0;
+          h4 = dh.h5;
+          h5 = dh.h4;
+        };
+      down =
+        {
+          center = th.center;
+          h0 = th.h3;
+          h1 = th.h2;
+          h2 = th.h1;
+          h3 = th.h0;
+          h4 = th.h5;
+          h5 = th.h4;
+        };
+      side =
+        {
+          center = sh.center;
+          h0 = sh.h3;
+          h1 = sh.h2;
+          h2 = sh.h1;
+          h3 = sh.h0;
+          h4 = sh.h5;
+          h5 = sh.h4;
+        };
+      center =
+        {
+          center = ch.center;
+          h0 = ch.h3;
+          h1 = ch.h2;
+          h2 = ch.h1;
+          h3 = ch.h0;
+          h4 = ch.h5;
+          h5 = ch.h4;
+        };
+    }
+
+  let shuffle b =
+    let b' = shuffle_outer b in
+    match Random.int 3 with
+    | 0 -> flip_top b'
+    | 1 -> flip_down b'
+    | 2 -> flip_side b'
+    | _ -> assert false
 
   let string_of_board ({ top = th; down = dh; side = sh; center = ch } : t) :
       string =
