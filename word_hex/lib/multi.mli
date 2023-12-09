@@ -8,12 +8,12 @@ module type MultiType = sig
 
   val shape_of_string : string -> shape option
   (** Returns Some shape corresponding to the given string. If the string does
-      not correspond to any shape, returns None. Valid strings are "Hex" and
-      "TwoHex"*)
+      not correspond to any shape, returns None. Valid strings are "Hex",
+      "TwoHex", "Triple", "Flower", and "Honeycomb"*)
 
   val string_of_shape : shape -> string
   (** Returns the string corresponding to the given shape. Possible strings are
-      "Hex" and "TwoHex"*)
+      "Hex", "TwoHex", "Triple", "Flower", and "Honeycomb"*)
 
   val shape_of_board : t -> shape
   (** Returns the shape of the given board.*)
@@ -39,6 +39,9 @@ module type MultiType = sig
   (** Returns a board that has the same configuration but with the letters of
       each hexagon shuffle. If there are multiple hexes in the board, returns
       the exact same board*)
+
+  val string_of_board : t -> string
+  (** Returns a string that visually represents the board when printed*)
 
   val print : t -> unit
   (** Print visual representation of the board in the terminal. *)

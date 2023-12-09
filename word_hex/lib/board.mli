@@ -25,6 +25,9 @@ module type BoardType = sig
       each hexagon shuffle. If there are multiple hexes in the board, returns
       the exact same board*)
 
+  val string_of_board : t -> string
+  (** Returns a string that visually represents the board when printed*)
+
   val print : t -> unit
   (** Print visual representation of the board in the terminal. *)
 
@@ -46,17 +49,22 @@ module HexBoard : BoardType
     in a hexagon). *)
 
 module TwoHex : BoardType
-(** A Word Hex Board with two hexes (a hex is a group of 7 letters arranged in a
-    hexagon) arranged so that two of the outer letters overlap.
+(* * A Word Hex Board with two hexes (a hex is a group of 7 letters arranged in
+   a hexagon) arranged so that two of the outer letters overlap. *)
 
-    module TripleBoard : BoardType (** A Word Hex Board with four hexes (a hex
-    is a group of 7 letters arranged in a hexagon) that overlap such that there
-    is one hex in the center and three hexes surrounding the center hex, where
-    the center letters of the outer hexes are also outer letters of the center
-    hex. *)
+module TripleBoard : BoardType
+(* * A Word Hex Board with four hexes (a hex is a group of 7 letters arranged in
+   a hexagon) that overlap such that there is one hex in the center and three
+   hexes surrounding the center hex, where the center letters of the outer hexes
+   are also outer letters of the center hex. *)
 
-    module FlowerBoard : BoardType (** A Word Hex Board with four hexes (a hex
-    is a group of 7 letters arranged in a hexagon) arranged so that there is one
-    hex in the center and three hexes surrounding the center hex, where two
-    outer letters from each outer hex overlap with the outer letters of the
-    center board. *) *)
+module FlowerBoard : BoardType
+(** A Word Hex Board with four hexes (a hex is a group of 7 letters arranged in
+    a hexagon) arranged so that there is one hex in the center and three hexes
+    surrounding the center hex, where two outer letters from each outer hex
+    overlap with the outer letters of the center board. *)
+
+module Honeycomb : BoardType
+(** A Word Hex Board with six hexes (a hex is a group of 7 letters arranged in a
+    hexagon) arranged so that there is a grid of overlaping hexes with 5 main
+    columns of heights 4-5-4-5-4 *)

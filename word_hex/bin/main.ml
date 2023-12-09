@@ -2,10 +2,9 @@ open Word_hex
 open Board
 open Multi
 open Game
-module G = Game
 module D = TrieDictionary.Make
 
-let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
+let rec command (input : string) (g : Game.t) (dict : D.t) : Game.t =
   match input with
   | "#help" ->
       print_newline ();
@@ -17,15 +16,18 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
         \ #shuffle - shuffles the letters on the game board\n\
         \ #reset - resets the current game\n\
         \ #rankings - shows the rankings and the minimum score required to \
-         earn each rank";
+         earn each rank\n\
+        \ #solution - shows the list of all possible words";
       print_newline ();
       g
   | "#new" ->
-      if not (G.contains_pangram dict (G.get_board g)) then (
+      let new_game = Game.build None (choose_shape ()) dict in
+      if not (Game.contains_pangram dict (Game.get_board new_game)) then (
+        print_newline ();
         print_endline "Please note that this board does not contain a pangram.";
         print_newline ())
       else ();
-      G.build None (choose_shape ()) dict
+      new_game
   | "#found" ->
       print_newline ();
       print_endline "Words Found So Far:";
@@ -34,20 +36,25 @@ let rec command (input : string) (g : G.t) (dict : D.t) : G.t =
            (fun x ->
              print_string x;
              print_newline ())
-           (G.found g));
+           (Game.found g));
       print_newline ();
       g
-  | "#shuffle" -> G.shuffle g
-  | "#reset" -> G.reset g
-  | "#rankings" -> G.print_rankings g
+  | "#shuffle" -> Game.shuffle g
+  | "#reset" -> Game.reset g
+  | "#rankings" -> Game.print_rankings g
+  | "#solution" ->
+      print_newline ();
+      print_string (Game.all_filtered_words_game_str g);
+      print_newline ();
+      g
   | _ ->
       print_endline "Not a Valid Command";
       print_newline ();
       g
 
 (* read-eval-print loop *)
-and repl (game : G.t) (dict : D.t) : unit =
-  G.print game;
+and repl (game : Game.t) (dict : D.t) : unit =
+  Game.print game;
   print_string "Type a word: ";
   let input = read_line () in
   if String.length input > 0 && input.[0] = '#' then
@@ -57,10 +64,17 @@ and repl (game : G.t) (dict : D.t) : unit =
     | "" -> print_endline "bye"
     | _ ->
         print_newline ();
-        repl (G.update game input) dict
+        repl (Game.update game input) dict
 
 and choose_shape () : MultiBoard.shape =
-  print_string "Choose a shape for your game board: \n \n   - Hex \n   - TwoHex";
+  print_string
+    "Choose a shape for your game board: \n\
+    \ \n\
+    \   - Hex \n\
+    \   - TwoHex \n\
+    \   - Triple\n\
+    \   - Flower\n\
+    \   - Honeycomb";
   print_newline ();
   print_string "Board shape: ";
   let input = read_line () in
@@ -98,23 +112,33 @@ let rec other_loop () =
       print_endline "Please wait while the game is set up...\n";
       let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
       let dict = D.of_list dict_lst in
-      let game = G.build None shape dict in
+      let game = Game.build None shape dict in
+      if not (Game.contains_pangram dict (Game.get_board game)) then (
+        print_endline "Please note that this board does not contain a pangram.";
+        print_newline ())
+      else ();
       repl game dict
 
-let rec one_loop (text_box : Raylib.Rectangle.t) text (game : G.t) (dict : D.t)
-    =
-  match Raylib.window_should_close () with
-  | true -> Raylib.close_window ()
+let rec one_loop (text_box : Raylib.Rectangle.t) text (game : Game.t)
+    (dict : D.t) =
+  let open Raylib in
+  match window_should_close () with
+  | true -> close_window ()
   | false ->
-      let open Raylib in
       begin_drawing ();
       clear_background Color.raywhite;
-      draw_text ("Score : " ^ string_of_int 0) 30 25 20 Color.darkgray;
-      draw_text ("Rank : " ^ "Beginner") 30 45 20 Color.darkgray;
-      draw_text "Unimplemented One Hex" 280 200 20 Color.darkgray;
+      draw_text
+        ("Score : " ^ string_of_int (Game.get_score game))
+        30 25 20 Color.darkgray;
+      draw_text ("Rank : " ^ Game.get_rank_str game) 30 45 20 Color.darkgray;
+      draw_text "Unimplemented One Hex" 280 350 20 Color.darkgray;
+      draw_text
+        (MultiBoard.string_of_board (Game.get_board game))
+        320 100 30 Color.black;
       end_drawing ();
       one_loop text_box text game dict
 
+(* crates a one hex gui *)
 let setup_one_loop () =
   match Raylib.window_should_close () with
   | true -> Raylib.close_window ()
@@ -127,16 +151,15 @@ let setup_one_loop () =
       let dict_lst = Array.to_list (Arg.read_arg "data/enable1.txt") in
       let dict = D.of_list dict_lst in
       let game =
-        G.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
+        Game.build None (Option.get (MultiBoard.shape_of_string "Hex")) dict
       in
-      let text_box = Rectangle.create 0. 0. 0. 0. in
-      let text =
-        let text = Bytes.create 20 in
-        Bytes.fill text 0 20 '\000'
-      in
+      let text_box = Rectangle.create 50. 50. 50. 50. in
+      set_target_fps 10;
+      let text = Bytes.create 20 in
+      Bytes.fill text 0 20 '\000';
       one_loop text_box text game dict
 
-(* completed up to here *)
+(* home screen for word_hex *)
 let rec intro_loop () =
   match Raylib.window_should_close () with
   | true -> Raylib.close_window ()
@@ -150,7 +173,9 @@ let rec intro_loop () =
         \      the center letter and has the option of the outer ones" 75 190 20
         Color.darkgray;
       draw_text "Select a board shape to begin" 250 290 20 Color.darkgray;
+      (* one hex *)
       draw_rectangle 250 350 100 50 Color.blue;
+      (* other shape *)
       draw_rectangle 450 350 100 50 Color.blue;
       draw_text "One Hex" 265 370 18 Color.white;
       draw_text "Other \nShape" 470 355 18 Color.white;

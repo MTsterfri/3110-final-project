@@ -37,9 +37,11 @@ module type GameType = sig
     int -> MultiBoard.shape -> string list option -> D.t -> MultiBoard.t
 
   val contains_pangram : D.t -> MultiBoard.t -> bool
-  val all_filtered_words_game : t -> DList.t
+  val all_filtered_words_board : D.t -> MultiBoard.t -> DList.t
+  val all_filtered_words_game_str : t -> string
   val get_highest_possible_score : t -> int
-  val score_calc_game : string -> t -> int
+  val score_calc_board : string -> MultiBoard.t -> int
+  val calculate_rank_str : int -> int -> string
   val print_rankings : t -> t
   val print : t -> unit
 end
@@ -145,15 +147,6 @@ module Game : GameType = struct
     let valid_dictionary_word = D.contains word game.dictionary in
     new_word && valid_board_word && valid_dictionary_word
 
-  (**Returns the number of points associated with a word [word]. The number of
-     points associated with [word] is equal to the length of [word], unless
-     [word] is only four letters long, for which it is then only associated with
-     one point.*)
-  and score_calc_game (word : string) (game : t) : int =
-    if String.length word = 4 then 1
-    else if MultiBoard.is_pangram word game.board then 7 + String.length word
-    else String.length word
-
   and score_calc_board (word : string) (board : MultiBoard.t) =
     if String.length word = 4 then 1
     else if MultiBoard.is_pangram word board then 7 + String.length word
@@ -166,7 +159,7 @@ module Game : GameType = struct
     if new_word word original_found_words = false then
       { game with message = "You already found that word!" }
     else if valid_word word game then
-      let points = score_calc_game word game in
+      let points = score_calc_board word game.board in
       let new_score = original_score + points in
       {
         score = new_score;
@@ -206,24 +199,11 @@ module Game : GameType = struct
     in
     DList.of_list words_lst
 
-  and all_filtered_words_game (game : t) : DList.t =
-    let board_data = MultiBoard.board_data game.board in
-    let words_lst =
-      List.fold_left
-        (fun acc (elem : char * char list) ->
-          let center, letters = elem in
-          let char_lst = center :: letters in
-          let lower_char_lst =
-            List.map (fun char -> Char.lowercase_ascii char) char_lst
-          in
-          let all_words = D.of_char_list lower_char_lst game.dictionary in
-          List.filter
-            (fun word -> MultiBoard.contains word game.board)
-            all_words
-          @ acc)
-        [] board_data
+  and all_filtered_words_game_str (game : t) : string =
+    let filtered_words =
+      DList.to_list (all_filtered_words_board game.dictionary game.board)
     in
-    DList.of_list words_lst
+    List.fold_left (fun acc elem -> elem ^ "\n" ^ acc) "\n" filtered_words
 
   and highest_possible_board_score (board : MultiBoard.t) (dict : D.t) : int =
     let words = DList.to_list (all_filtered_words_board dict board) in
@@ -233,18 +213,49 @@ module Game : GameType = struct
 
   and calculate_rank (game : t) : rank =
     let hs = float_of_int game.highest_possible_score in
-    let score = float_of_int game.score in
-    let num = score /. hs in
-    if 0.0 <= num && num < 0.02 then Beginner 0
-    else if 0.02 <= num && num < 0.05 then GoodStart (int_of_float (hs *. 0.02))
-    else if 0.05 <= num && num < 0.08 then MovingUp (int_of_float (hs *. 0.05))
-    else if 0.08 <= num && num < 0.15 then Good (int_of_float (hs *. 0.08))
-    else if 0.15 <= num && num < 0.25 then Solid (int_of_float (hs *. 0.15))
-    else if 0.25 <= num && num < 0.4 then Nice (int_of_float (hs *. 0.25))
-    else if 0.4 <= num && num < 0.5 then Great (int_of_float (hs *. 0.4))
-    else if 0.5 <= num && num < 0.7 then Amazing (int_of_float (hs *. 0.5))
-    else if 0.7 <= num && num < 1.0 then Genius (int_of_float (hs *. 0.7))
+    let s = game.score in
+    let good_start = int_of_float (hs *. 0.02) in
+    let moving_up = int_of_float (hs *. 0.05) in
+    let good = int_of_float (hs *. 0.08) in
+    let solid = int_of_float (hs *. 0.15) in
+    let nice = int_of_float (hs *. 0.25) in
+    let great = int_of_float (hs *. 0.4) in
+    let amazing = int_of_float (hs *. 0.5) in
+    let genius = int_of_float (hs *. 0.7) in
+
+    if 0 <= s && s < good_start then Beginner 0
+    else if good_start <= s && s < moving_up then
+      GoodStart (int_of_float (hs *. 0.02))
+    else if moving_up <= s && s < good then MovingUp (int_of_float (hs *. 0.05))
+    else if good <= s && s < solid then Good (int_of_float (hs *. 0.08))
+    else if solid <= s && s < nice then Solid (int_of_float (hs *. 0.15))
+    else if nice <= s && s < great then Nice (int_of_float (hs *. 0.25))
+    else if great <= s && s < nice then Great (int_of_float (hs *. 0.4))
+    else if amazing <= s && s < genius then Amazing (int_of_float (hs *. 0.5))
+    else if genius <= s && s < 1 then Genius (int_of_float (hs *. 0.7))
     else QueenBee 1
+
+  and calculate_rank_str (s : int) (high_score : int) : string =
+    let hs = float_of_int high_score in
+    let good_start = int_of_float (hs *. 0.02) in
+    let moving_up = int_of_float (hs *. 0.05) in
+    let good = int_of_float (hs *. 0.08) in
+    let solid = int_of_float (hs *. 0.15) in
+    let nice = int_of_float (hs *. 0.25) in
+    let great = int_of_float (hs *. 0.4) in
+    let amazing = int_of_float (hs *. 0.5) in
+    let genius = int_of_float (hs *. 0.7) in
+
+    if 0 <= s && s < good_start then "Beginner"
+    else if good_start <= s && s < moving_up then "GoodStart"
+    else if moving_up <= s && s < good then "MovingUp"
+    else if good <= s && s < solid then "Good"
+    else if solid <= s && s < nice then "Solid"
+    else if nice <= s && s < great then "Nice"
+    else if great <= s && s < nice then "Great"
+    else if amazing <= s && s < genius then "Amazing"
+    else if genius <= s && s < 1 then "Genius"
+    else "QueenBee"
 
   and contains_pangram (dict : D.t) (board : MultiBoard.t) : bool =
     let words = DList.to_list (all_filtered_words_board dict board) in
@@ -267,9 +278,12 @@ module Game : GameType = struct
   and best_board (count : int) (shape : MultiBoard.shape)
       (custom_words : string list option) (dict : D.t) : MultiBoard.t =
     match find_best_board count shape dict custom_words with
-    | Some board -> board
+    | Some board ->
+        good_boards_list := [];
+        board
     | None ->
         let good_boards = !good_boards_list in
+        good_boards_list := [];
         List.fold_left
           (fun best_board_result elem ->
             if
@@ -310,7 +324,7 @@ module Game : GameType = struct
               acc ^ "Good Start          " ^ string_of_int pts ^ "\n"
           | Beginner pts ->
               acc ^ "Beginner            " ^ string_of_int pts ^ "\n")
-        ("\n" ^ "Rank          Minimum Score" ^ "\n\n")
+        ("\n" ^ "Rank                Minimum Score" ^ "\n\n")
         rank_lst
     in
     print_endline rank_str;
