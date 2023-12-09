@@ -67,7 +67,8 @@ let uncommon_consonant_list =
   [
     (9, 'J');
     (10, 'K');
-    (16, 'Q');
+    (* (16, 'Q'); *)
+    (* Don't know how to get Q to always accompany a U*)
     (21, 'V');
     (22, 'W');
     (23, 'X');
@@ -196,21 +197,22 @@ let hex_build_random () : hex =
     h5 = List.nth random_list 6;
   }
 
-(** Takes in a lst of 4 characters, representing letters on a partially filled
-    in hex. Returns a list of three additional letters to complete the hex *)
-let fill_in_3 (lst : char list) : char list =
+(** Takes in a lst of 7-n characters, representing letters on a partially filled
+    in hex. Returns a list of n additional letters to complete the hex *)
+let fill_in_n (lst : char list) (n : int) : char list =
+  assert (List.length lst = 7 - n);
   let combo =
     match pick_random combinations 1 with
     | [ c ] -> c
     | _ -> assert false
   in
   let vowels = pick_random vowel_list 2 in
-  let cc = pick_random common_consonant_list 3 in
-  let uc = pick_random uncommon_consonant_list 2 in
+  let cc = pick_random common_consonant_list 4 in
+  let uc = pick_random uncommon_consonant_list 1 in
   let extras_other = difference (vowels @ cc @ uc) combo in
   let extras = combo @ randomize [] extras_other in
   let extra_letters = difference extras lst in
-  extra_letters
+  take n extra_letters
 
 (*******************************************************)
 (***************** HEX BOARD MODULE ********************)
@@ -291,43 +293,20 @@ module TwoHex : BoardType = struct
   type t = hex * hex
 
   let build_random () : t =
-    let combo1, combo2 =
-      match pick_random combinations 2 with
-      | [ c1; c2 ] -> (c1, c2)
-      | _ -> assert false
-    in
-    let vowels1 = pick_random vowel_list 2 in
-    let vowels2 = pick_random vowel_list 2 in
-    let cc1 = pick_random common_consonant_list 2 in
-    let cc2 = pick_random common_consonant_list 2 in
-    let uc1 = pick_random uncommon_consonant_list 1 in
-    let uc2 = pick_random uncommon_consonant_list 1 in
-    let chars1 = randomize [] (take 5 (union combo1 (vowels1 @ cc1 @ uc1))) in
-    let chars2 = randomize [] (take 5 (union combo2 (vowels2 @ cc2 @ uc2))) in
-    let overlap_v = pick_random vowel_list 1 in
-    let overlap_cc = pick_random common_consonant_list 10 in
-    let overlap =
-      randomize []
-        (take 2 (difference (overlap_v @ overlap_cc) (chars1 @ chars2)))
-    in
-    ( {
-        center = List.nth chars1 0;
-        h0 = List.nth chars1 1;
-        h1 = List.nth chars1 2;
-        h2 = List.nth overlap 0;
-        h3 = List.nth overlap 1;
-        h4 = List.nth chars1 3;
-        h5 = List.nth chars1 4;
-      },
+    let b1 = hex_build_random () in
+    let b2_extra_letters = randomize [] (fill_in_n [ b1.h2; b1.h3 ] 5) in
+    let b2 =
       {
-        center = List.nth chars2 0;
-        h0 = List.nth overlap 0;
-        h1 = List.nth chars2 1;
-        h2 = List.nth chars2 2;
-        h3 = List.nth chars2 3;
-        h4 = List.nth chars2 4;
-        h5 = List.nth overlap 1;
-      } )
+        center = List.nth b2_extra_letters 0;
+        h0 = b1.h2;
+        h1 = List.nth b2_extra_letters 1;
+        h2 = List.nth b2_extra_letters 2;
+        h3 = List.nth b2_extra_letters 3;
+        h4 = List.nth b2_extra_letters 4;
+        h5 = b1.h3;
+      }
+    in
+    (b1, b2)
 
   let build (input : string list option) : t =
     ignore input;
@@ -428,7 +407,7 @@ module TripleBoard : BoardType = struct
     (* First make the center hex*)
     let ch = hex_build_random () in
     (* Next make left hex - needs 3 additional letters*)
-    let left_extra_letters = fill_in_3 [ ch.center; ch.h0; ch.h4; ch.h5 ] in
+    let left_extra_letters = fill_in_n [ ch.center; ch.h0; ch.h4; ch.h5 ] 3 in
     let lh =
       {
         center = ch.h5;
@@ -441,7 +420,7 @@ module TripleBoard : BoardType = struct
       }
     in
     (* Next make right hex - needs 3 additional letters*)
-    let right_extra_letters = fill_in_3 [ ch.center; ch.h0; ch.h1; ch.h2 ] in
+    let right_extra_letters = fill_in_n [ ch.center; ch.h0; ch.h1; ch.h2 ] 3 in
     let rh =
       {
         center = ch.h1;
@@ -454,7 +433,7 @@ module TripleBoard : BoardType = struct
       }
     in
     (* Next make left hex - needs 3 additional letters*)
-    let down_extra_letters = fill_in_3 [ ch.center; ch.h2; ch.h3; ch.h4 ] in
+    let down_extra_letters = fill_in_n [ ch.center; ch.h2; ch.h3; ch.h4 ] 3 in
     let dh =
       {
         center = ch.h3;
@@ -613,80 +592,48 @@ module FlowerBoard : BoardType = struct
 
   let build input =
     ignore input;
-    let lst =
-      [
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-        'A';
-      ]
+    (* First make the center hex*)
+    let ch = hex_build_random () in
+    (* Next make top hex - needs 5 additional letters*)
+    let top_extra_letters = randomize [] (fill_in_n [ ch.h0; ch.h5 ] 5) in
+    let th =
+      {
+        center = List.nth top_extra_letters 0;
+        h0 = List.nth top_extra_letters 1;
+        h1 = List.nth top_extra_letters 2;
+        h2 = ch.h0;
+        h3 = ch.h5;
+        h4 = List.nth top_extra_letters 3;
+        h5 = List.nth top_extra_letters 4;
+      }
     in
-    {
-      top =
-        {
-          center = List.nth lst 0;
-          h0 = List.nth lst 1;
-          h1 = List.nth lst 2;
-          h2 = List.nth lst 3;
-          h3 = List.nth lst 4;
-          h4 = List.nth lst 5;
-          h5 = List.nth lst 6;
-        };
-      down =
-        {
-          center = List.nth lst 7;
-          h0 = List.nth lst 8;
-          h1 = List.nth lst 9;
-          h2 = List.nth lst 10;
-          h3 = List.nth lst 11;
-          h4 = List.nth lst 12;
-          h5 = List.nth lst 13;
-        };
-      side =
-        {
-          center = List.nth lst 14;
-          h0 = List.nth lst 15;
-          h1 = List.nth lst 16;
-          h2 = List.nth lst 17;
-          h3 = List.nth lst 18;
-          h4 = List.nth lst 19;
-          h5 = List.nth lst 20;
-        };
-      center =
-        {
-          center = List.nth lst 21;
-          h0 = List.nth lst 22;
-          h1 = List.nth lst 23;
-          h2 = List.nth lst 24;
-          h3 = List.nth lst 25;
-          h4 = List.nth lst 26;
-          h5 = List.nth lst 27;
-        };
-    }
+    (* Next make down hex - needs 5 additional letters*)
+    let down_extra_letters = randomize [] (fill_in_n [ ch.h3; ch.h4 ] 5) in
+    let dh =
+      {
+        center = List.nth down_extra_letters 0;
+        h0 = ch.h4;
+        h1 = ch.h3;
+        h2 = List.nth down_extra_letters 1;
+        h3 = List.nth down_extra_letters 2;
+        h4 = List.nth down_extra_letters 3;
+        h5 = List.nth down_extra_letters 4;
+      }
+    in
+    (* Next make side hex - needs 5 additional letters*)
+    let side_extra_letters = randomize [] (fill_in_n [ ch.h1; ch.h2 ] 5) in
+    let sh =
+      {
+        center = List.nth side_extra_letters 0;
+        h0 = List.nth side_extra_letters 1;
+        h1 = List.nth side_extra_letters 2;
+        h2 = List.nth side_extra_letters 3;
+        h3 = List.nth side_extra_letters 4;
+        h4 = ch.h2;
+        h5 = ch.h1;
+      }
+    in
+    { top = th; down = dh; side = sh; center = ch }
 
   let contains (word : string)
       ({ top = th; down = dh; side = sh; center = ch } : t) : bool =
@@ -823,7 +770,7 @@ module Honeycomb : BoardType = struct
     (* First build the middle upper hex b3 *)
     let b3 = hex_build_random () in
     (* Next fill in middle lower hex b4 - needs three additional letters *)
-    let b4_extra_letters = fill_in_3 [ b3.center; b3.h2; b3.h3; b3.h4 ] in
+    let b4_extra_letters = fill_in_n [ b3.center; b3.h2; b3.h3; b3.h4 ] 3 in
     let b4 =
       {
         center = b3.h3;
@@ -836,7 +783,7 @@ module Honeycomb : BoardType = struct
       }
     in
     (* Next fill in left upper hex b1 - needs three additional letters *)
-    let b1_extra_letters = fill_in_3 [ b3.center; b3.h0; b3.h4; b3.h5 ] in
+    let b1_extra_letters = fill_in_n [ b3.center; b3.h0; b3.h4; b3.h5 ] 3 in
     let b1 =
       {
         center = b3.h5;
@@ -849,7 +796,7 @@ module Honeycomb : BoardType = struct
       }
     in
     (* Next fill in left lower hex b2 - needs three additional letters *)
-    let b2_extra_letters = fill_in_3 [ b4.center; b4.h3; b4.h4; b4.h5 ] in
+    let b2_extra_letters = fill_in_n [ b4.center; b4.h3; b4.h4; b4.h5 ] 3 in
     let b2 =
       {
         center = b4.h4;
@@ -862,7 +809,7 @@ module Honeycomb : BoardType = struct
       }
     in
     (* Next fill in right upper hex b5 - needs three additional letters *)
-    let b5_extra_letters = fill_in_3 [ b3.center; b3.h0; b3.h1; b3.h2 ] in
+    let b5_extra_letters = fill_in_n [ b3.center; b3.h0; b3.h1; b3.h2 ] 3 in
     let b5 =
       {
         center = b3.h1;
@@ -875,7 +822,7 @@ module Honeycomb : BoardType = struct
       }
     in
     (* Next fill in right lower hex b6 - needs three additional letters *)
-    let b6_extra_letters = fill_in_3 [ b4.center; b4.h1; b4.h2; b4.h3 ] in
+    let b6_extra_letters = fill_in_n [ b4.center; b4.h1; b4.h2; b4.h3 ] 3 in
     let b6 =
       {
         center = b4.h2;
