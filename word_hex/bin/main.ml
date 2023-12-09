@@ -140,17 +140,26 @@ let rec one_loop (text_box : Raylib.Rectangle.t) text (game : Game.t)
           len - 1)
         else len
       in
+      let str =
+        String.sub (String.lowercase_ascii (String.of_bytes text)) 0 len
+      in
       let game_update =
         if is_key_pressed Key.Enter then
-          let str =
-            String.sub (String.lowercase_ascii (String.of_bytes text)) 0 len
-          in
           (* commented out for testing in terminal *)
           (* let _ = Game.print game in let _ = print_endline ("\"" ^ str ^
              "\"") in let _ = print_endline (string_of_bool (D.contains str
              dict)) in *)
           Game.update game str
         else game
+      in
+      let len =
+        if
+          is_key_pressed Key.Enter
+          && Game.get_score game < Game.get_score game_update
+        then
+          let _ = Bytes.fill text 0 20 '\000' in
+          0
+        else len
       in
       begin_drawing ();
       clear_background Color.raywhite;
@@ -192,7 +201,6 @@ let setup_one_loop () =
       let text_box = Rectangle.create 275. 375. 240. 40. in
       let text = Bytes.create 20 in
       Bytes.fill text 0 20 '\000';
-      print_string (Bytes.to_string text);
       one_loop text_box text game 0 dict
 
 (* home screen for word_hex *)
