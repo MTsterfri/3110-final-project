@@ -1062,7 +1062,7 @@ module FlowerBoard : BoardType = struct
     ^ String.make 1 sh.h2 ^ "\n" ^ String.make 1 dh.h5 ^ med
     ^ String.make 1 dh.h1 ^ med ^ String.make 1 sh.h3 ^ "\n" ^ short
     ^ String.make 1 dh.center ^ "\n" ^ String.make 1 dh.h4 ^ med
-    ^ String.make 1 dh.h2 ^ "\n" ^ short ^ String.make 1 dh.h3
+    ^ String.make 1 dh.h2 ^ "\n" ^ short ^ String.make 1 dh.h3 ^ "\n"
 
   let print b = print_string (string_of_board b)
 

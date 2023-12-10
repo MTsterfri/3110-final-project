@@ -7,15 +7,22 @@
 
    Game Module:
 
-   Board Module: Since the build function in a BoardType module creates a random
-   board, the main strategy for testing was to test different properties that
-   should hold true for any board. These generalized property is run on 100
+   Board Modules: Since the build function in a BoardType module creates a
+   random board, the main strategy for testing was to test different properties
+   that should hold true for any board. These generalized property is run on 100
    different randomly generated boards in each test case. However, due to this
    random element, some of the functions could not be tested via unit tests.
    Functions such as string_of_board and print are tested through game play on
-   the command line.
+   the command line. Overal, the majority of functions in the BoardType modules
+   are tested via randomized unit tests, but some functions are tested through
+   game play. The MuliBoard module in Multi.ml was tested through game play.
+   This strategy shows the correctness of the system because within the OUnit
+   tests each test case runs 100 random boards, and on the command line we
+   tested serveral different corner cases. Between the volume of random tests
+   and the corner cases, we should have good testing coverage that suggests
+   proper functionality of these modules.
 
-   Dictionary Module: The main testing strategy with the dictionary module was
+   Dictionary Modules: The main testing strategy with the dictionary module was
    to use test driven development. Before each function was made, at least three
    black box tests would be created. Based on implementations and smaller
    features that provided boundary cases, the tests were updated. These tests
